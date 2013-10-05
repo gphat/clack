@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>QUnit Example</title>
+  <link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-1.12.0.css">
+</head>
+<body>
+  <canvas id="myCanvas" width="500" height="200" style="border: 1px solid black"></canvas>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  <script src="http://code.jquery.com/qunit/qunit-1.12.0.js"></script>
+  <script src="/paper-full.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
+  <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="/chart.js" charset="utf-8"></script>  
+  <script>
+  test("simple work", function() {
+    var c = new chart();
+    
+    ok(c !== undefined, "chart is defined");
+
+    var index = c.addSeries({
+      x: [ 0, 5, 10],
+      y: [ 10, 20, 30],
+      label: 'foobar',
+      color: 'red'
+    });
+
+    ok(index === 0, 'first added series is an index of 0');
+
+    var ctx = c.getContext('default');
+
+    ok(ctx !== undefined, 'chart has a default context');
+
+    ok(ctx.xmax === 10, 'xmax is 10');
+    ok(ctx.xmin === 0, 'xmin is 0');
+    ok(ctx.xrange === 10, 'xrange is 10');
+    ok(ctx.ymax === 30, 'ymax is 30');
+    ok(ctx.ymin === 10, 'ymin is 10');
+    ok(ctx.yrange === 20, 'yrange is 20');
+
+    c.addToSeries('default', index, [11, -1], [31, 9]);
+
+    ok(ctx.xmax === 11, 'xmax is 11');
+    ok(ctx.xmin === -1, 'xmin is -1');
+    ok(ctx.xrange === 12, 'xrange is 12');
+    ok(ctx.ymax === 31, 'ymax is 31');
+    ok(ctx.ymin === 9, 'ymin is 12');
+    ok(ctx.yrange === 22, 'yrange is 22');
+  });
+  </script>
+</body>
+</html>
