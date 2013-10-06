@@ -75,8 +75,8 @@
         color: '#000'
       }
 
-      var series = 12;
-      var points = 50;
+      var series = 4;
+      var points = 30;
 
       c.addMarker(tracker);
 
@@ -86,7 +86,7 @@
         var whys = [];
         for(var i = 0; i <= points; i++) {
           exes.push(i);
-          whys.push(Math.floor(Math.random() * 100));
+          whys.push((j + 1) * Math.sin(2 * Math.PI * j + i));
         }
         c.addSeries({
           x: exes,

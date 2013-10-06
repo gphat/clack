@@ -2,6 +2,12 @@
 
 Clack might be a charting library. It's really just a side project that may or may not turn in to anything.
 
+## Features
+
+* Canvas based
+* Scales: Linear, time, log and some others I don't really understand (power, quartile, quantile and threshold)
+* Markers (arbitrary x and y charts with optional ranges)
+
 ## Goals
 
 ### Flexible
@@ -24,4 +30,6 @@ Not at all. Bring on the deps.
 
 * [D3](http://d3js.org/) for scales and other bits.
 * [Underscore.js](http://underscorejs.org/) because I like it's API.
-* [jQuery](http://jquery.com/) because why not.
+
+
+The demo and tests require [jQuery](http://jquery.com/) but it is not required for your own use.

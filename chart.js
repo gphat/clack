@@ -9,8 +9,10 @@ function chart(element, decoElement) {
   this.contexts = {
     default: {    
       this: {},
-      domainAxis: undefined,
-      rangeAxis: undefined,
+      domainScale: undefined,
+      domainScaleType: 'linear',
+      rangeScale: undefined,
+      rangeScaleType: 'linear',
       series: [],
       xmax: -Infinity,
       xmin: Infinity,
@@ -21,10 +23,12 @@ function chart(element, decoElement) {
       markers: []
     }
   };
-  this.scale = 'linear',
   // paper.setup(element);
   this.element = element;
   this.decoElement = decoElement;
+
+  this.height = element.clientHeight;
+  this.width = element.clientWidth;
 
   this.getContext = function(name) {
     return this.contexts[name];
@@ -114,58 +118,98 @@ function chart(element, decoElement) {
 
     ctx.xrange = ctx.xmax - ctx.xmin;
     ctx.yrange = ctx.ymax - ctx.ymin;
+
+    // Create the scales if they don't exist.
+    if(ctx.domainScale === undefined) {
+      ctx.domainScale = this.makeScale(ctx.domainScaleType);
+      ctx.domainScale.range([0, this.width]);
+    
+      ctx.rangeScale = this.makeScale(ctx.rangeScaleType);;
+      ctx.rangeScale.range([this.height, 0]);
+    }
+
+    if(ctx.domainScaleType === 'log') {
+      if(ctx.xmin === 0) {
+        // log(0) == -Infinity!
+        ctx.xmin = 1;
+      }
+    }
+    if(ctx.rangeScaleType === 'log') {
+      // log(0) == -Infinity!
+      if(ctx.ymin === 0) {
+        ctx.ymin = 1;
+      }
+    }
+
+    ctx.domainScale.domain([ctx.xmin, ctx.xmax]);
+    ctx.rangeScale.domain([ctx.ymin, ctx.ymax]);
+  }
+
+  this.makeScale = function(type) {
+    if(type === 'log') {
+      return d3.scale.log();
+    } else if(type === 'quantile') {
+      return d3.scale.quantize();
+    } else if(type === 'quantize') {
+      return d3.scale.quantize();
+    } else if(type === 'sqrt') {
+      return d3.scale.pow();
+    } else if(type === 'threshold') {
+      return d3.scale.threshold();
+    } else if(type === 'time') {
+      return d3.time.scale();
+    } else {
+      return d3.scale.linear();
+    }
   }
 
   this.draw = function() {
     console.time("draw");
-    var height = $(element).height();
-    var width = $(element).width();
 
     var ctx = element.getContext('2d');
-    ctx.fillStyle='#FFFFFF';
-    ctx.clearRect(0, 0, width, height);
+    ctx.clearRect(0, 0, this.width, this.height);
 
     // Iterate over each context
     _.each(_.values(this.contexts), function(c) {
-
-      // Create a domain and range scale
-      // XXX Could probably generate this once then adjust the domain/range.
-      var domainScale = d3.scale.linear()
-        .domain([c.xmin, c.xmax])
-        .range([0, width]);
-      var rangeScale = d3.scale.linear()
-        .domain([c.ymin, c.ymax])
-        .range([height, 0]);
 
       // Iterate over each series
       _.each(c.series, function(s) {
         // console.log(s);
         ctx.beginPath();
         ctx.strokeStyle = s.color;
+        ctx.fillStyle = s.color;
         ctx.lineWidth = 1;
         _.each(_.zip(s.x, s.y), function(p) {
             // Rounded to avoid sub-pixel rendering which isn't really useful
             ctx.lineTo(
-              Math.round(domainScale(p[0])),
-              Math.round(rangeScale(p[1]))
+              Math.round(c.domainScale(p[0])),
+              Math.round(c.rangeScale(p[1]))
             );
         });
         ctx.stroke();
+
+        // If line point is desired.
+        // ctx.beginPath();
+        // _.each(_.zip(s.x, s.y), function(p) {
+        //     // Rounded to avoid sub-pixel rendering which isn't really useful
+        //     ctx.moveTo(
+        //       Math.round(c.domainScale(p[0])),
+        //       Math.round(c.rangeScale(p[1]))
+        //     );
+        //     ctx.arc(c.domainScale(p[0]), c.rangeScale(p[1]), 2, 0, 2 * Math.PI, true);
+        // });
+        // ctx.fill();
       });
     });
     console.timeEnd('draw');
   }
 
   this.drawDecorations = function() {
-    // console.time('drawDecorations');
-    var height = $(decoElement).height();
-    var width = $(decoElement).width();
+    var self = this;
     var ctx = decoElement.getContext('2d');
-    ctx.clearRect(0, 0, width, height);
-
-    _.each(_.values(this.contexts), function(c) {
+    ctx.clearRect(0, 0, self.width, self.height);
+    _.each(_.values(self.contexts), function(c) {
       if(c.markers.length > 0) {
-
         // Iterate over any markers
         _.each(c.markers, function(m) {
           if(m.x1 !== undefined) {
@@ -177,7 +221,7 @@ function chart(element, decoElement) {
               ctx.strokeStyle = m.color;
               ctx.lineWidth = 1;
               ctx.moveTo(m.x1, 0);
-              ctx.lineTo(m.x1, height);
+              ctx.lineTo(m.x1, self.height);
               ctx.stroke();
             }
           } else if(m.y1 !== undefined) {
@@ -189,13 +233,12 @@ function chart(element, decoElement) {
               ctx.strokeStyle = m.color;
               ctx.lineWidth = 3;
               ctx.moveTo(0, m.y1);
-              ctx.lineTo(width, m.y1);
+              ctx.lineTo(self.width, m.y1);
               ctx.stroke();
             }
           }
         });
       }
     });
-    // console.timeEnd('drawDecorations');
   }
 }
