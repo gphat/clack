@@ -164,7 +164,7 @@ function chart(element, decoElement) {
   }
 
   this.draw = function() {
-    console.time("draw");
+    // console.time("draw");
 
     var ctx = element.getContext('2d');
     ctx.clearRect(0, 0, this.width, this.height);
@@ -201,7 +201,7 @@ function chart(element, decoElement) {
         // ctx.fill();
       });
     });
-    console.timeEnd('draw');
+    // console.timeEnd('draw');
   }
 
   this.drawDecorations = function() {

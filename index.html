@@ -80,7 +80,7 @@
 
       c.addMarker(tracker);
 
-      console.time("generatechart");
+      // console.time("generatechart");
       for(var j = 0; j <= series; j++) {
         var exes = [];
         var whys = [];
@@ -95,7 +95,7 @@
           color: 'hsla(' + Math.random() * 360 + ", 100%, 50%, 1)"
         });
       }
-      console.timeEnd("generatechart");
+      // console.timeEnd("generatechart");
 
       c.draw();
       c.drawDecorations();
