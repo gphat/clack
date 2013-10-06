@@ -86,16 +86,22 @@ function chart(parent) {
     return idx;
   }
 
-  this.addToSeries = function(ctxName, index, exes, whys) {
+  this.addToSeries = function(ctxName, index, exes, whys, replace) {
 
     var ctx = this.contexts[ctxName];
 
     series = ctx.series[index];
 
     if((exes instanceof Array) && (whys instanceof Array)) {
-      series.x = series.x.concat(exes).slice(exes.length);
-      series.y = series.y.concat(whys).slice(whys.length);
+      series.x = series.x.concat(exes);
+      series.y = series.y.concat(whys);
     }
+
+    if(replace === true) {
+      series.x = series.x.slice(exes.length);
+      series.y = series.y.slice(whys.length);
+    }
+
     this.updateSeries(ctxName, index, exes, whys);
   }
 
