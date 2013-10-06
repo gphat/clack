@@ -23,7 +23,6 @@ function chart(element, decoElement) {
       markers: []
     }
   };
-  // paper.setup(element);
   this.element = element;
   this.decoElement = decoElement;
 
