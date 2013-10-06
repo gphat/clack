@@ -6,17 +6,16 @@
   <link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-1.12.0.css">
 </head>
 <body>
-  <canvas id="myCanvas" width="500" height="200" style="border: 1px solid black"></canvas>
+  <div id="myCanvas" width="500" height="200" style="border: 1px solid black"></div>
   <div id="qunit"></div>
   <div id="qunit-fixture"></div>
   <script src="http://code.jquery.com/qunit/qunit-1.12.0.js"></script>
-  <script src="/paper-full.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
   <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
   <script src="/chart.js" charset="utf-8"></script>  
   <script>
   test("simple work", function() {
-    var c = new chart();
+    var c = new chart(document.getElementById('myCanvas'));
     
     ok(c !== undefined, "chart is defined");
 
@@ -56,7 +55,6 @@
       y2: 32
     });
 
-    console.log(ctx.xmax);
     ok(ctx.xmax === 12, 'xmax is 12');
     ok(ctx.xmin === -2, 'xmin is -2');
     ok(ctx.xrange === 14, 'xrange is 14');

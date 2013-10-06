@@ -93,8 +93,8 @@ function chart(parent) {
     series = ctx.series[index];
 
     if((exes instanceof Array) && (whys instanceof Array)) {
-      series.x = series.x.concat(exes); //.slice(exes.length);
-      series.y = series.y.concat(whys); //.slice(whys.length);
+      series.x = series.x.concat(exes).slice(exes.length);
+      series.y = series.y.concat(whys).slice(whys.length);
     }
     this.updateSeries(ctxName, index, exes, whys);
   }
