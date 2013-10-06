@@ -48,9 +48,11 @@
       </div>
     </div>
 
-    <div id="root" class="container" style="margin-top: 60px">
-    
-    <p>50 charts, each with 4 timeseries and 30 points updating every 10ms.</p>
+    <div class="container" style="margin-top: 60px">
+
+    <p>2,000 series with 3,000 points each.</p>
+
+    <div id="chartContainer" style="border: 1px solid black; position: relative; width: 800px; height: 400px"></div>
 
     </div><!-- /.container -->
 
@@ -65,66 +67,54 @@
     <script src="chart.js" charset="utf-8"></script>
     <script>
     $(document).ready(function() {
-      var charts = [];
-      console.time("many charts");
-      for(var x = 0; x <= 50; x++) {
 
-        var div = document.createElement('div');
-        div.id = 'chart' + x;
-        div.style.display = "inline-block";
-        div.style.border = "1px solid black";
-        div.style.margin = "5px";
-        div.style.position = "relative";
-        div.style.width = "350px";
-        div.style.height = "200px";
-        document.getElementById('root').appendChild(div);
+      var c = new chart(
+        document.getElementById('chartContainer')
+      );
 
-        var c = new chart(
-          document.getElementById('chart' + x)
-        );
+      var tracker = {
+        x1: undefined,
+        x2: undefined,
+        y1: undefined,
+        y2: undefined,
+        color: '#000'
+      }
 
-        var series = 4;
-        var points = 30;
+      var series = 2000;
+      var points = 3000;
 
-        var currentDate = new Date();
-        
-        for(var j = 0; j <= series; j++) {
-          var exes = [];
-          var whys = [];
-          for(var i = 0; i <= points; i++) {
-            exes.push(i);
-            whys.push((j + 1) * Math.sin(2 * Math.PI * j + i + currentDate.getSeconds()));
-          }
-          c.addSeries({
-            x: exes,
-            y: whys,
-            label: 'foobar ' + j,
-            color: 'hsla(' + Math.random() * 360 + ", 100%, 50%, 1)"
-          });
+      c.addMarker(tracker);
+
+      var currentDate = new Date();
+      
+      for(var j = 0; j <= series; j++) {
+        var exes = [];
+        var whys = [];
+        for(var i = 0; i <= points; i++) {
+          exes.push(i);
+          whys.push((j + 1) * Math.sin(2 * Math.PI * j + i + currentDate.getSeconds()));
         }
-
-        c.draw();
-        c.drawDecorations();
-        charts.push(c);
-      }
-      console.timeEnd('many charts');
-
-      var x = 31;
-      var addAPoint = function() {
-        _.each(charts, function(c) {
-          for(var j = 0; j <= series; j++) {
-            var y = Math.floor(Math.random() * 50);
-            // console.time('redraw');
-            c.addToSeries('default', j, [x], [(j + 1) * Math.sin(2 * Math.PI * j + x)], true);
-
-            c.draw();
-            // console.timeEnd('redraw');
-            x += 1;
-          }
+        c.addSeries({
+          x: exes,
+          y: whys,
+          label: 'foobar ' + j,
+          color: 'hsla(' + Math.random() * 360 + ", 100%, 50%, 1)"
         });
-        setTimeout(addAPoint,10);
       }
-      setTimeout(addAPoint,10);
+
+      console.time("generatechart");
+      c.draw();
+      c.drawDecorations();
+      console.timeEnd("generatechart");
+
+      $('#chartContainer').mouseleave(function(e) {
+        tracker.x1 = undefined;
+        c.drawDecorations();
+      });
+      $('#chartContainer').mousemove(function(e) {
+        tracker.x1 = e.offsetX;
+        c.drawDecorations();
+      });
     });
     </script>
   </body>

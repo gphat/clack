@@ -7,6 +7,7 @@ Clack might be a charting library. It's really just a side project that may or m
 * Canvas based
 * Scales: Linear, time, log and some others I don't really understand (power, quartile, quantile and threshold)
 * Markers (arbitrary x and y charts with optional ranges)
+* Can be updated dynamically (adding data on the fly, requires sorting for now)
 
 ## Goals
 
