@@ -1,11 +1,12 @@
-// XXX Assumes the data is sorted.
+// Problems
+// Assumes the data is sorted.
 // context name defaults to default everywhere
 // No way to set line widths
 
 // Ideas
 // Is this applicable: http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
 
-function chart(element, decoElement) {
+function chart(parent) {
   this.contexts = {
     default: {    
       this: {},
@@ -23,11 +24,38 @@ function chart(element, decoElement) {
       markers: []
     }
   };
-  this.element = element;
-  this.decoElement = decoElement;
+  this.parent = parent;
 
-  this.height = element.clientHeight;
-  this.width = element.clientWidth;
+  this.height = parent.clientHeight;
+  this.width = parent.clientWidth;
+
+  // Add the chart canvas
+  this.element = document.createElement('canvas');
+  this.element.style.position = 'absolute';
+  this.element.style.left = 0;
+  this.element.style.top = 0;
+  this.element.width = this.width;
+  this.element.height = this.height;
+  this.element.style.zIndex = 0;
+  parent.appendChild(this.element);
+  this.ctx = this.element.getContext('2d');
+
+  // Add the topmost "decoration" canvas
+  this.decoElement = document.createElement('canvas');
+  this.decoElement.style.position = 'absolute';
+  this.decoElement.style.left = 0;
+  this.decoElement.style.top = 0;
+  this.decoElement.width = this.width;
+  this.decoElement.height = this.height;
+  this.decoElement.style.zIndex = 1;
+  parent.appendChild(this.decoElement);
+  this.decoCtx = this.decoElement.getContext('2d');
+
+  // Create an in-memory canvas!
+  this.memElement = document.createElement('canvas');
+  this.memElement.width = this.width;
+  this.memElement.height = this.height;
+  this.memCtx = this.memElement.getContext('2d');
 
   this.getContext = function(name) {
     return this.contexts[name];
@@ -65,56 +93,70 @@ function chart(element, decoElement) {
     series = ctx.series[index];
 
     if((exes instanceof Array) && (whys instanceof Array)) {
-      series.x = series.x.concat(exes);
-      series.y = series.y.concat(whys);
+      series.x = series.x.concat(exes); //.slice(exes.length);
+      series.y = series.y.concat(whys); //.slice(whys.length);
     }
     this.updateSeries(ctxName, index, exes, whys);
   }
 
-  this.updateSeries = function(ctxName, index, exes, whys) {
+  // Update stats for the series.
+  this.updateSeries = function(ctxName, index) {
     var ctx = this.contexts[ctxName];
 
     series = ctx.series[index];
 
-    series.xmax = Math.max(d3.max(exes), series.xmax);
-    series.xmin = Math.min(d3.min(exes), series.xmin);
+    series.xmax = d3.max(series.x);
+    series.xmin = d3.min(series.x)
 
-    series.ymax = Math.max(d3.max(whys), series.ymax);
-    series.ymin = Math.min(d3.min(whys), series.ymin);
+    series.ymax = d3.max(series.y);
+    series.ymin = d3.min(series.y);
 
     series.xrange = series.xmax - series.xmin;
     series.yrange = series.ymax - series.ymin;
 
-    ctx.series[index] = series;
+    //ctx.series[index] = series;
 
     this.updateContext(ctxName);
   }
 
+  // Update stats for the context.
   this.updateContext = function(ctxName) {
     var ctx = this.contexts[ctxName];
 
+    // Iterate through each series, establishing the maxes of x and y.
+    var xmax = -Infinity;
+    var ymax = -Infinity;
+    var xmin = Infinity;
+    var ymin = Infinity;
     _.each(ctx.series, function(s) {
-      ctx.xmax = Math.max(ctx.xmax, s.xmax);
-      ctx.xmin = Math.min(ctx.xmin, s.xmin);
-      ctx.ymax = Math.max(ctx.ymax, s.ymax);
-      ctx.ymin = Math.min(ctx.ymin, s.ymin);
+      xmax = Math.max(xmax, s.xmax);
+      xmin = Math.min(xmin, s.xmin);
+      ymax = Math.max(ymax, s.ymax);
+      ymin = Math.min(ymin, s.ymin);
     });
 
+    // Do the same for any markers.
     _.each(ctx.markers, function(m) {
       if(m.x1 !== undefined) {
-        ctx.xmin = Math.min(ctx.xmin, m.x1);
+        xmin = Math.min(xmin, m.x1);
       }
       if(m.x2 !== undefined) {
-        ctx.xmax = Math.max(ctx.xmax, m.x2);
+        xmax = Math.max(xmax, m.x2);
       }
       if(m.y1 !== undefined) {
-        ctx.ymin = Math.min(ctx.ymin, m.y1);
+        ymin = Math.min(ymin, m.y1);
       }
       if(m.y2 !== undefined) {
-        ctx.ymax = Math.max(ctx.ymax, m.y2);
+        ymax = Math.max(ymax, m.y2);
       }
     });
 
+    ctx.xmax = xmax;
+    ctx.xmin = xmin;
+    ctx.ymax = ymax;
+    ctx.ymin = ymin;
+
+    // Set the range based on what we know now.
     ctx.xrange = ctx.xmax - ctx.xmin;
     ctx.yrange = ctx.ymax - ctx.ymin;
 
@@ -127,6 +169,7 @@ function chart(element, decoElement) {
       ctx.rangeScale.range([this.height, 0]);
     }
 
+    // Some help for log scales, which can't have a 0!
     if(ctx.domainScaleType === 'log') {
       if(ctx.xmin === 0) {
         // log(0) == -Infinity!
@@ -140,10 +183,13 @@ function chart(element, decoElement) {
       }
     }
 
+    // Finally, set the comain for each scale.
     ctx.domainScale.domain([ctx.xmin, ctx.xmax]);
     ctx.rangeScale.domain([ctx.ymin, ctx.ymax]);
   }
 
+  // Convencience function for creating a scale based
+  // on a string name.
   this.makeScale = function(type) {
     if(type === 'log') {
       return d3.scale.log();
@@ -162,10 +208,12 @@ function chart(element, decoElement) {
     }
   }
 
+  // Draw the cart. Erases everything first.
   this.draw = function() {
     // console.time("draw");
 
-    var ctx = element.getContext('2d');
+    // Note that we're drawing on the in-memory canvas.
+    var ctx = this.memCtx;
     ctx.clearRect(0, 0, this.width, this.height);
 
     // Iterate over each context
@@ -173,10 +221,10 @@ function chart(element, decoElement) {
 
       // Iterate over each series
       _.each(c.series, function(s) {
-        // console.log(s);
+        // Create a new path for each series.
         ctx.beginPath();
+        // Set color
         ctx.strokeStyle = s.color;
-        ctx.fillStyle = s.color;
         ctx.lineWidth = 1;
         _.each(_.zip(s.x, s.y), function(p) {
             // Rounded to avoid sub-pixel rendering which isn't really useful
@@ -190,6 +238,7 @@ function chart(element, decoElement) {
         // If line point is desired.
         // ctx.beginPath();
         // _.each(_.zip(s.x, s.y), function(p) {
+        //     ctx.fillStyle = s.color;
         //     // Rounded to avoid sub-pixel rendering which isn't really useful
         //     ctx.moveTo(
         //       Math.round(c.domainScale(p[0])),
@@ -200,12 +249,16 @@ function chart(element, decoElement) {
         // ctx.fill();
       });
     });
+
+    // Copy the contents on the in-memory canvas into the displayed one.
+    this.ctx.clearRect(0, 0, this.width, this.height);
+    this.ctx.drawImage(this.memElement, 0, 0);
     // console.timeEnd('draw');
   }
 
   this.drawDecorations = function() {
     var self = this;
-    var ctx = decoElement.getContext('2d');
+    var ctx = self.memCtx;
     ctx.clearRect(0, 0, self.width, self.height);
     _.each(_.values(self.contexts), function(c) {
       if(c.markers.length > 0) {
@@ -239,5 +292,7 @@ function chart(element, decoElement) {
         });
       }
     });
+    this.decoCtx.clearRect(0, 0, this.width, this.height);
+    this.decoCtx.drawImage(this.memElement, 0, 0);
   }
 }

@@ -43,10 +43,7 @@
     </div>
 
     <div class="container" style="margin-top: 60px">
-    <div style="position: relative;">
-     <canvas id="canvasData" width="500" height="200" style="border: 1px solid black; position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
-     <canvas id="canvasDeco" width="500" height="200" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
-    </div>
+    <div id="chartContainer" style="border: 1px solid black; position: relative; width: 500px; height: 200px"></div>
 
     </div><!-- /.container -->
 
@@ -63,8 +60,7 @@
     $(document).ready(function() {
 
       var c = new chart(
-        document.getElementById('canvasData'),
-        document.getElementById('canvasDeco')
+        document.getElementById('chartContainer')
       );
 
       var tracker = {
@@ -80,13 +76,15 @@
 
       c.addMarker(tracker);
 
+      var currentDate = new Date();
+      
       // console.time("generatechart");
       for(var j = 0; j <= series; j++) {
         var exes = [];
         var whys = [];
         for(var i = 0; i <= points; i++) {
           exes.push(i);
-          whys.push((j + 1) * Math.sin(2 * Math.PI * j + i));
+          whys.push((j + 1) * Math.sin(2 * Math.PI * j + i + currentDate.getSeconds()));
         }
         c.addSeries({
           x: exes,
@@ -104,22 +102,23 @@
       var addAPoint = function() {
         for(var j = 0; j <= series; j++) {
           var y = Math.floor(Math.random() * 50);
-          c.addToSeries('default', j, [x], [y]);
+          // console.time('redraw');
+          c.addToSeries('default', j, [x], [(j + 1) * Math.sin(2 * Math.PI * j + x)]);
 
           c.draw();
-          console.timeEnd("draw");
+          // console.timeEnd('redraw');
           x += 1;
         }
-        setTimeout(addAPoint,10);
+        setTimeout(addAPoint,100);
       }
-      // setTimeout(addAPoint,10);
+      // setTimeout(addAPoint,100);
 
 
-      $('#canvasDeco').mouseleave(function(e) {
+      $('#chartContainer').mouseleave(function(e) {
         tracker.x1 = undefined;
         c.drawDecorations();
       });
-      $('#canvasDeco').mousemove(function(e) {
+      $('#chartContainer').mousemove(function(e) {
         tracker.x1 = e.offsetX;
         c.drawDecorations();
       });
