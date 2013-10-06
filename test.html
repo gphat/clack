@@ -46,8 +46,25 @@
     ok(ctx.xmin === -1, 'xmin is -1');
     ok(ctx.xrange === 12, 'xrange is 12');
     ok(ctx.ymax === 31, 'ymax is 31');
-    ok(ctx.ymin === 9, 'ymin is 12');
+    ok(ctx.ymin === 9, 'ymin is 9');
     ok(ctx.yrange === 22, 'yrange is 22');
+
+    c.addMarker({
+      x1: -2,
+      x2: 12,
+      y1: 8,
+      y2: 32
+    });
+
+    console.log(ctx.xmax);
+    ok(ctx.xmax === 12, 'xmax is 12');
+    ok(ctx.xmin === -2, 'xmin is -2');
+    ok(ctx.xrange === 14, 'xrange is 14');
+    ok(ctx.ymax === 32, 'ymax is 32');
+    ok(ctx.ymin === 8, 'ymin is 8');
+    ok(ctx.yrange === 24, 'yrange is 24');
+
+
   });
   </script>
 </body>

@@ -43,8 +43,10 @@
     </div>
 
     <div class="container" style="margin-top: 60px">
-
-    <canvas id="myCanvas" width="800" height="400" style="border: 1px solid black"></canvas>
+    <div style="position: relative;">
+     <canvas id="canvasData" width="500" height="200" style="border: 1px solid black; position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
+     <canvas id="canvasDeco" width="500" height="200" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
+    </div>
 
     </div><!-- /.container -->
 
@@ -54,72 +56,73 @@
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="//code.jquery.com/jquery-1.10.1.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
-    <script src="/paper-full.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
     <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
     <script src="/chart.js" charset="utf-8"></script>
     <script>
     $(document).ready(function() {
 
-      var c = new chart(document.getElementById('myCanvas'));
+      var c = new chart(
+        document.getElementById('canvasData'),
+        document.getElementById('canvasDeco')
+      );
+
+      var tracker = {
+        x1: undefined,
+        x2: undefined,
+        y1: undefined,
+        y2: undefined,
+        color: '#000'
+      }
+
+      var series = 12;
+      var points = 50;
+
+      c.addMarker(tracker);
 
       console.time("generatechart");
-      for(var j = 0; j <= 300; j++) {
+      for(var j = 0; j <= series; j++) {
         var exes = [];
         var whys = [];
-        for(var i = 0; i <= 1000; i++) {
+        for(var i = 0; i <= points; i++) {
           exes.push(i);
           whys.push(Math.floor(Math.random() * 100));
         }
-        var i = c.addSeries({
+        c.addSeries({
           x: exes,
           y: whys,
-          label: 'foobar',
-          color: {
-            hue: Math.random() * 360,
-            saturation: 1,
-            lightness: .5,
-            alpha: 1
-          }
+          label: 'foobar ' + j,
+          color: 'hsla(' + Math.random() * 360 + ", 100%, 50%, 1)"
         });
       }
       console.timeEnd("generatechart");
 
-      console.time("drawchart");
       c.draw();
-      console.timeEnd("drawchart");
+      c.drawDecorations();
 
-      var x = 11;
+      var x = points;
       var addAPoint = function() {
-        var y = Math.floor(Math.random() * 100);
-        c.addToSeries('default', i, [x], [y]);
-        c.draw();
-        x += 1;
-        console.log('point');
-        setTimeout(addAPoint,1);
+        for(var j = 0; j <= series; j++) {
+          var y = Math.floor(Math.random() * 50);
+          c.addToSeries('default', j, [x], [y]);
+
+          c.draw();
+          console.timeEnd("draw");
+          x += 1;
+        }
+        setTimeout(addAPoint,10);
       }
-      // setTimeout(addAPoint,1);
+      // setTimeout(addAPoint,10);
 
-      // var hitOptions = {
-      //   segments: true,
-      //   stroke: true,
-      //   fill: true,
-      //   tolerance: 5
-      // };
 
-      // $('#myCanvas').mousemove(function(e) {
-      //   var parentOffset = $(this).parent().offset();
-      //   var relX = e.pageX - parentOffset.left;
-      //   var relY = e.pageY - parentOffset.top;
-      //   var hitResult = paper.project.hitTest(new paper.Point(relX, relY));
-      //   if (!hitResult) {
-      //     return;
-      //   } else {
-      //     console.log("hit!");
-      //     hitResult.item.strokeWidth = 5;
-      //     c.draw();
-      //   }
-      // });
+      $('#canvasDeco').mouseleave(function(e) {
+        tracker.x1 = undefined;
+        c.drawDecorations();
+      });
+      $('#canvasDeco').mousemove(function(e) {
+        tracker.x1 = e.offsetX;
+        c.drawDecorations();
+      });
     });
     </script>
   </body>

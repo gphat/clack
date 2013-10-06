@@ -1,32 +1,57 @@
-function chart(element) {
+// XXX Assumes the data is sorted.
+// context name defaults to default everywhere
+// No way to set line widths
+
+// Ideas
+// Is this applicable: http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
+
+function chart(element, decoElement) {
   this.contexts = {
     default: {    
       this: {},
       domainAxis: undefined,
       rangeAxis: undefined,
       series: [],
-      xmax: undefined,
-      xmin: undefined,
-      xrange: undefined,
-      ymax: undefined,
-      ymin: undefined,
-      yrange: undefined,
+      xmax: -Infinity,
+      xmin: Infinity,
+      xrange: 0,
+      ymax: -Infinity,
+      ymin: Infinity,
+      yrange: 0,
+      markers: []
     }
   };
   this.scale = 'linear',
-  paper.setup(element);
+  // paper.setup(element);
   this.element = element;
+  this.decoElement = decoElement;
 
   this.getContext = function(name) {
     return this.contexts[name];
+  }
+
+  this.addMarker = function(marker) {
+    var ctx = this.contexts['default'];
+    
+    ctx.markers.push(marker);
+
+    this.updateContext('default');
+    return ctx.markers.length;
   }
 
   this.addSeries = function(series) {
     var ctx = this.contexts['default'];
 
     ctx.series.push(series);
+    // Establish some defaults that can be later.
+    series.xmax = -Infinity;
+    series.xmin = Infinity;
+    series.xrange = 0;
+    series.ymax = -Infinity;
+    series.ymin = Infinity;
+    series.yrange = 0;
     var idx = ctx.series.length - 1;
-    this.updateSeries('default', idx);
+    this.updateSeries('default', idx, series.x, series.y);
     return idx;
   }
 
@@ -40,19 +65,19 @@ function chart(element) {
       series.x = series.x.concat(exes);
       series.y = series.y.concat(whys);
     }
-    this.updateSeries(ctxName, index);
+    this.updateSeries(ctxName, index, exes, whys);
   }
 
-  this.updateSeries = function(ctxName, index) {
+  this.updateSeries = function(ctxName, index, exes, whys) {
     var ctx = this.contexts[ctxName];
 
     series = ctx.series[index];
 
-    series.xmin = d3.min(series.x);
-    series.xmax = d3.max(series.x);
+    series.xmax = Math.max(d3.max(exes), series.xmax);
+    series.xmin = Math.min(d3.min(exes), series.xmin);
 
-    series.ymin = d3.min(series.y);
-    series.ymax = d3.max(series.y);
+    series.ymax = Math.max(d3.max(whys), series.ymax);
+    series.ymin = Math.min(d3.min(whys), series.ymin);
 
     series.xrange = series.xmax - series.xmin;
     series.yrange = series.ymax - series.ymin;
@@ -66,64 +91,111 @@ function chart(element) {
     var ctx = this.contexts[ctxName];
 
     _.each(ctx.series, function(s) {
-      if(ctx.xmax === undefined || ctx.xmax < s.xmax) {
-        ctx.xmax = s.xmax;
-      }
-      if(ctx.xmin === undefined || ctx.xmin > s.xmin) {
-        ctx.xmin = s.xmin;
-      }
-      if(ctx.ymax === undefined || ctx.ymax < s.ymax) {
-        ctx.ymax = s.ymax;
-      }
-      if(ctx.ymin === undefined || ctx.ymin > s.ymin) {
-        ctx.ymin = s.ymin;
-      }
-      ctx.xrange = ctx.xmax - ctx.xmin;
-      ctx.yrange = ctx.ymax - ctx.ymin;
+      ctx.xmax = Math.max(ctx.xmax, s.xmax);
+      ctx.xmin = Math.min(ctx.xmin, s.xmin);
+      ctx.ymax = Math.max(ctx.ymax, s.ymax);
+      ctx.ymin = Math.min(ctx.ymin, s.ymin);
     });
+
+    _.each(ctx.markers, function(m) {
+      if(m.x1 !== undefined) {
+        ctx.xmin = Math.min(ctx.xmin, m.x1);
+      }
+      if(m.x2 !== undefined) {
+        ctx.xmax = Math.max(ctx.xmax, m.x2);
+      }
+      if(m.y1 !== undefined) {
+        ctx.ymin = Math.min(ctx.ymin, m.y1);
+      }
+      if(m.y2 !== undefined) {
+        ctx.ymax = Math.max(ctx.ymax, m.y2);
+      }
+    });
+
+    ctx.xrange = ctx.xmax - ctx.xmin;
+    ctx.yrange = ctx.ymax - ctx.ymin;
   }
 
   this.draw = function() {
+    console.time("draw");
+    var height = $(element).height();
+    var width = $(element).width();
+
+    var ctx = element.getContext('2d');
+    ctx.fillStyle='#FFFFFF';
+    ctx.clearRect(0, 0, width, height);
 
     // Iterate over each context
-    _.each(_.values(this.contexts), function(ctx) {
+    _.each(_.values(this.contexts), function(c) {
 
       // Create a domain and range scale
       // XXX Could probably generate this once then adjust the domain/range.
       var domainScale = d3.scale.linear()
-        .domain([ctx.xmin, ctx.xmax])
-        .range([0, $(element).width()]);
+        .domain([c.xmin, c.xmax])
+        .range([0, width]);
       var rangeScale = d3.scale.linear()
-        .domain([ctx.ymin, ctx.ymax])
-        .range([$(element).height(), 0]);
+        .domain([c.ymin, c.ymax])
+        .range([height, 0]);
 
       // Iterate over each series
-      _.each(ctx.series, function(s) {
-        if(s.hasOwnProperty('layer')) {
-          // If we have a layer, remove it.
-          s.layer.remove();
-        }
-        // Make a new layer and activate it.
-        var layer = new paper.Layer();
-        layer.activate();
-        // Make a path for the series.
-        var path = new paper.Path();
-        // Set the color of the stroke
-        path.strokeColor = s.color;
-        path.strokeWidth = 1;
-        s.layer = layer;
-        // Zip together the x,y and iterate over them drawing lines.
-        _.reduce(_.zip(s.x, s.y), function(last, p) {
-          if(last === undefined) {
-            path.moveTo(domainScale(p[0]), rangeScale(p[1]));
-          } else {
-            path.lineTo(domainScale(p[0]), rangeScale(p[1]));
-          }
-          return p;
-        }, undefined);
+      _.each(c.series, function(s) {
+        // console.log(s);
+        ctx.beginPath();
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = 1;
+        _.each(_.zip(s.x, s.y), function(p) {
+            // Rounded to avoid sub-pixel rendering which isn't really useful
+            ctx.lineTo(
+              Math.round(domainScale(p[0])),
+              Math.round(rangeScale(p[1]))
+            );
+        });
+        ctx.stroke();
       });
     });
+    console.timeEnd('draw');
+  }
 
-    paper.view.draw();
+  this.drawDecorations = function() {
+    // console.time('drawDecorations');
+    var height = $(decoElement).height();
+    var width = $(decoElement).width();
+    var ctx = decoElement.getContext('2d');
+    ctx.clearRect(0, 0, width, height);
+
+    _.each(_.values(this.contexts), function(c) {
+      if(c.markers.length > 0) {
+
+        // Iterate over any markers
+        _.each(c.markers, function(m) {
+          if(m.x1 !== undefined) {
+            if(m.x2 !== undefined) {
+              // XXX Draw a box
+            } else {
+              // Just a simple line
+              ctx.beginPath();
+              ctx.strokeStyle = m.color;
+              ctx.lineWidth = 1;
+              ctx.moveTo(m.x1, 0);
+              ctx.lineTo(m.x1, height);
+              ctx.stroke();
+            }
+          } else if(m.y1 !== undefined) {
+            if(m.y2 !== undefined) {
+              // XXX Draw a box
+            } else {
+              // Just a simple line
+              ctx.beginPath();
+              ctx.strokeStyle = m.color;
+              ctx.lineWidth = 3;
+              ctx.moveTo(0, m.y1);
+              ctx.lineTo(width, m.y1);
+              ctx.stroke();
+            }
+          }
+        });
+      }
+    });
+    // console.timeEnd('drawDecorations');
   }
 }
