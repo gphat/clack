@@ -19,3 +19,9 @@ Needs to be able to deal with thousands of series each with tens of thousands of
 ### Don't Give A Shit About File Size
 
 Not at all. Bring on the deps.
+
+## Dependencies
+
+* [D3](http://d3js.org/) for scales and other bits.
+* [Underscore.js](http://underscorejs.org/) because I like it's API.
+* [jQuery](http://jquery.com/) because why not.
