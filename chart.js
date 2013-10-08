@@ -216,7 +216,7 @@ function chart(parent) {
 
   // Draw the cart. Erases everything first.
   this.draw = function() {
-    // console.time("draw");
+    // console.time('draw');
 
     // Note that we're drawing on the in-memory canvas.
     var ctx = this.memCtx;
@@ -233,12 +233,10 @@ function chart(parent) {
         // Set color
         ctx.strokeStyle = c.series[j].color;
         ctx.lineWidth = 1;
+
         for(var k = 0; k < c.series[j].x.length; k++) {
-            // Rounded to avoid sub-pixel rendering which isn't really useful
-            ctx.lineTo(
-              Math.round(c.domainScale(c.series[j].x[k])),
-              Math.round(c.rangeScale(c.series[j].y[k]))
-            );
+          // Rounded to avoid sub-pixel rendering which isn't really useful
+          ctx.lineTo(c.domainScale(c.series[j].x[k]), c.rangeScale(c.series[j].y[k]));
         }
         ctx.stroke();
 
