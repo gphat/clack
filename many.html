@@ -60,7 +60,6 @@
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="//code.jquery.com/jquery-1.10.1.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
     <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
     <script src="chart.js" charset="utf-8"></script>
     <script>
@@ -111,7 +110,8 @@
 
       var x = 31;
       var addAPoint = function() {
-        _.each(charts, function(c) {
+        for(var i = 0; i < charts.length; i++) {
+          var c = charts[i];
           for(var j = 0; j <= series; j++) {
             var y = Math.floor(Math.random() * 50);
             // console.time('redraw');
@@ -121,7 +121,7 @@
             // console.timeEnd('redraw');
             x += 1;
           }
-        });
+        }
         setTimeout(addAPoint,10);
       }
       setTimeout(addAPoint,10);

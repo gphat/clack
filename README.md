@@ -30,6 +30,5 @@ Not at all. Bring on the deps.
 ## Dependencies
 
 * [D3](http://d3js.org/) for scales and other bits.
-* [Underscore.js](http://underscorejs.org/) because I like it's API.
 
 The demo and tests require [jQuery](http://jquery.com/) but it is not required for your own use.

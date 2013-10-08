@@ -134,15 +134,17 @@ function chart(parent) {
     var ymax = -Infinity;
     var xmin = Infinity;
     var ymin = Infinity;
-    _.each(ctx.series, function(s) {
+    for(var i = 0; i < ctx.series.length; i++) {
+      var s = ctx.series[i];
       xmax = Math.max(xmax, s.xmax);
       xmin = Math.min(xmin, s.xmin);
       ymax = Math.max(ymax, s.ymax);
       ymin = Math.min(ymin, s.ymin);
-    });
+    }
 
     // Do the same for any markers.
-    _.each(ctx.markers, function(m) {
+    for(var i = 0; i < ctx.markers.length; i++) {
+      var m = ctx.markers[i];
       if(m.x1 !== undefined) {
         xmin = Math.min(xmin, m.x1);
       }
@@ -155,7 +157,7 @@ function chart(parent) {
       if(m.y2 !== undefined) {
         ymax = Math.max(ymax, m.y2);
       }
-    });
+    }
 
     ctx.xmax = xmax;
     ctx.xmin = xmin;
@@ -216,18 +218,18 @@ function chart(parent) {
 
   // Draw the cart. Erases everything first.
   this.draw = function() {
-    // console.time('draw');
+    console.time('draw');
 
     // Note that we're drawing on the in-memory canvas.
     var ctx = this.memCtx;
     ctx.clearRect(0, 0, this.width, this.height);
 
     // Iterate over each context
-    _.each(_.values(this.contexts), function(c) {
+    for(var ctxName in this.contexts) {
+      var c = this.contexts[ctxName];
 
       // Iterate over each series
       for(var j = 0; j < c.series.length; j++) {
-      // _.each(c.series, function(s) {
         // Create a new path for each series.
         ctx.beginPath();
         // Set color
@@ -253,22 +255,25 @@ function chart(parent) {
         // });
         // ctx.fill();
       }
-    });
+    }
 
     // Copy the contents on the in-memory canvas into the displayed one.
     this.ctx.clearRect(0, 0, this.width, this.height);
     this.ctx.drawImage(this.memElement, 0, 0);
-    // console.timeEnd('draw');
+    console.timeEnd('draw');
   }
 
   this.drawDecorations = function() {
     var self = this;
     var ctx = self.memCtx;
     ctx.clearRect(0, 0, self.width, self.height);
-    _.each(_.values(self.contexts), function(c) {
+    for(var ctxName in self.contexts) {
+      var c = self.contexts[ctxName];
+
       if(c.markers.length > 0) {
         // Iterate over any markers
-        _.each(c.markers, function(m) {
+        for(var i = 0; i < c.markers.length; i++) {
+          var m = c.markers[i];
           if(m.x1 !== undefined) {
             if(m.x2 !== undefined) {
               // XXX Draw a box
@@ -294,9 +299,9 @@ function chart(parent) {
               ctx.stroke();
             }
           }
-        });
+        }
       }
-    });
+    }
     this.decoCtx.clearRect(0, 0, this.width, this.height);
     this.decoCtx.drawImage(this.memElement, 0, 0);
   }
