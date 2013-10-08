@@ -87,6 +87,7 @@
 
       var currentDate = new Date();
       
+      console.time("generatechart");
       for(var j = 0; j <= series; j++) {
         var exes = [];
         var whys = [];
@@ -101,11 +102,10 @@
           color: 'hsla(' + Math.random() * 360 + ", 100%, 50%, 1)"
         });
       }
+      console.timeEnd("generatechart");
 
-      console.time("generatechart");
       c.draw();
       c.drawDecorations();
-      console.timeEnd("generatechart");
 
       $('#chartContainer').mouseleave(function(e) {
         tracker.x1 = undefined;

@@ -226,19 +226,20 @@ function chart(parent) {
     _.each(_.values(this.contexts), function(c) {
 
       // Iterate over each series
-      _.each(c.series, function(s) {
+      for(var j = 0; j < c.series.length; j++) {
+      // _.each(c.series, function(s) {
         // Create a new path for each series.
         ctx.beginPath();
         // Set color
-        ctx.strokeStyle = s.color;
+        ctx.strokeStyle = c.series[j].color;
         ctx.lineWidth = 1;
-        _.each(_.zip(s.x, s.y), function(p) {
+        for(var k = 0; k < c.series[j].x.length; k++) {
             // Rounded to avoid sub-pixel rendering which isn't really useful
             ctx.lineTo(
-              Math.round(c.domainScale(p[0])),
-              Math.round(c.rangeScale(p[1]))
+              Math.round(c.domainScale(c.series[j].x[k])),
+              Math.round(c.rangeScale(c.series[j].y[k]))
             );
-        });
+        }
         ctx.stroke();
 
         // If line point is desired.
@@ -253,7 +254,7 @@ function chart(parent) {
         //     ctx.arc(c.domainScale(p[0]), c.rangeScale(p[1]), 2, 0, 2 * Math.PI, true);
         // });
         // ctx.fill();
-      });
+      }
     });
 
     // Copy the contents on the in-memory canvas into the displayed one.
