@@ -218,7 +218,7 @@ function chart(parent) {
 
   // Draw the cart. Erases everything first.
   this.draw = function() {
-    console.time('draw');
+    // console.time('draw');
 
     // Note that we're drawing on the in-memory canvas.
     var ctx = this.memCtx;
@@ -260,7 +260,7 @@ function chart(parent) {
     // Copy the contents on the in-memory canvas into the displayed one.
     this.ctx.clearRect(0, 0, this.width, this.height);
     this.ctx.drawImage(this.memElement, 0, 0);
-    console.timeEnd('draw');
+    // console.timeEnd('draw');
   }
 
   this.drawDecorations = function() {
