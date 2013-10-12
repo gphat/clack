@@ -180,10 +180,10 @@ function chart(parent, width, height, axes) {
     // Create the scales if they don't exist.
     if(ctx.domainScale === undefined) {
       ctx.domainScale = this.makeScale(ctx.domainScaleType);
-      ctx.domainScale.range([0, this.width]);
+      ctx.domainScale.rangeRound([0, this.width]);
     
       ctx.rangeScale = this.makeScale(ctx.rangeScaleType);;
-      ctx.rangeScale.range([this.height, 0]);
+      ctx.rangeScale.rangeRound([this.height, 0]);
     }
 
     // Some help for log scales, which can't have a 0!
@@ -255,8 +255,8 @@ function chart(parent, width, height, axes) {
           .attr("transform", "translate(40, 0)")
           .style("stroke", "#ccc");
 
-        defCtx.domainAxis = d3.svg.axis().scale(defCtx.domainScale).orient('bottom');
-        defCtx.rangeAxis = d3.svg.axis().scale(defCtx.rangeScale).orient('left');
+        defCtx.domainAxis = d3.svg.axis().scale(defCtx.domainScale).orient('bottom').ticks(5);
+        defCtx.rangeAxis = d3.svg.axis().scale(defCtx.rangeScale).orient('left').ticks(5);
         this.gx = this.d3shit.append('g')
           .attr("class", "axis")
           .attr("transform", "translate(40,200)")
