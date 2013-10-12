@@ -52,7 +52,7 @@
 
     <p>Just a boring chart.</p>
 
-    <div id="chartContainer" style="border: 1px solid black; position: relative; width: 500px; height: 200px"></div>
+    <div id="chartContainer" style="display: inline-block; position: relative"></div>
 
     </div><!-- /.container -->
 
@@ -68,7 +68,7 @@
     $(document).ready(function() {
 
       var c = new chart(
-        document.getElementById('chartContainer')
+        document.getElementById('chartContainer'), 500, 200
       );
 
       var tracker = {
@@ -121,7 +121,7 @@
       }
       // setTimeout(addAPoint,100);
 
-
+      // XXX These need to be on the inner canvas, not on the container.
       $('#chartContainer').mouseleave(function(e) {
         tracker.x1 = undefined;
         c.drawDecorations();

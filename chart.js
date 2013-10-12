@@ -6,12 +6,14 @@
 // Ideas
 // Is this applicable: http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
 
-function chart(parent) {
+function chart(parent, width, height) {
   this.contexts = {
     default: {    
       this: {},
+      domainAxis: undefined,
       domainScale: undefined,
       domainScaleType: 'linear',
+      rangeAxis: undefined,
       rangeScale: undefined,
       rangeScaleType: 'linear',
       series: [],
@@ -26,13 +28,20 @@ function chart(parent) {
   };
   this.parent = parent;
 
-  this.height = parent.clientHeight;
-  this.width = parent.clientWidth;
+  this.width = width; //parent.clientWidth;
+  this.height = height; //parent.clientHeight;
+
+  this.d3shit = d3.select(parent)
+    .append("svg")
+    .attr("class", "chart")
+    .attr("width", this.width + 40)
+    .attr("height", this.height + 20)
+    .append("g");
 
   // Add the chart canvas
   this.element = document.createElement('canvas');
   this.element.style.position = 'absolute';
-  this.element.style.left = 0;
+  this.element.style.left = "40px";
   this.element.style.top = 0;
   this.element.width = this.width;
   this.element.height = this.height;
@@ -43,7 +52,7 @@ function chart(parent) {
   // Add the topmost "decoration" canvas
   this.decoElement = document.createElement('canvas');
   this.decoElement.style.position = 'absolute';
-  this.decoElement.style.left = 0;
+  this.decoElement.style.left = "40px";
   this.decoElement.style.top = 0;
   this.decoElement.width = this.width;
   this.decoElement.height = this.height;
@@ -219,6 +228,47 @@ function chart(parent) {
   // Draw the cart. Erases everything first.
   this.draw = function() {
     // console.time('draw');
+
+    var defCtx = this.contexts['default'];
+
+    if(defCtx.domainAxis === undefined) {
+      this.d3shit.selectAll("line.x")
+        .data(defCtx.domainScale.ticks(5))
+        .enter().append("line")
+        .attr("class", "x")
+        .attr("x1", defCtx.domainScale)
+        .attr("x2", defCtx.domainScale)
+        .attr("y1", 0)
+        .attr("y2", this.height)
+        .attr("transform", "translate(40, 0)")
+        .style("stroke", "#ccc");
+
+      this.d3shit.selectAll("line.y")
+        .data(defCtx.rangeScale.ticks(5))
+        .enter().append("line")
+        .attr("class", "y")
+        .attr("x1", 0)
+        .attr("x2", this.width)
+        .attr("y1", defCtx.rangeScale)
+        .attr("y2", defCtx.rangeScale)
+        .attr("transform", "translate(40, 0)")
+        .style("stroke", "#ccc");
+
+      defCtx.domainAxis = d3.svg.axis().scale(defCtx.domainScale).orient('bottom');
+      defCtx.rangeAxis = d3.svg.axis().scale(defCtx.rangeScale).orient('left');
+      this.gx = this.d3shit.append('g')
+        .attr("class", "axis")
+        .attr("transform", "translate(40,200)")
+        .call(defCtx.domainAxis);
+       
+      this.gy = this.d3shit.append('g')
+        .attr("class", "axis")
+        .attr("transform", "translate(40,0)")
+        .call(defCtx.rangeAxis);
+    } else {
+      this.gx.transition().call(defCtx.domainAxis);
+      this.gy.transition().call(defCtx.rangeAxis);
+    }
 
     // Note that we're drawing on the in-memory canvas.
     var ctx = this.memCtx;

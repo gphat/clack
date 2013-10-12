@@ -52,7 +52,7 @@
 
     <p>1 charts with 4 timeseries and 30 points updating every 1ms.</p>
 
-    <div id="chartContainer" style="border: 1px solid black; position: relative; width: 500px; height: 200px"></div>
+    <div id="chartContainer" style="display: inline-block; position: relative;"></div>
 
     </div><!-- /.container -->
 
@@ -68,7 +68,7 @@
     $(document).ready(function() {
 
       var c = new chart(
-        document.getElementById('chartContainer')
+        document.getElementById('chartContainer'), 500, 200
       );
 
       var series = 4;
