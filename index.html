@@ -63,12 +63,13 @@
     <script src="//code.jquery.com/jquery-1.10.1.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
     <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="http://threejs.org/build/three.min.js"></script>
     <script src="chart.js" charset="utf-8"></script>
     <script>
     $(document).ready(function() {
 
       var c = new chart(
-        document.getElementById('chartContainer')
+        $('#chartContainer')
       );
 
       var tracker = {
@@ -98,13 +99,13 @@
           x: exes,
           y: whys,
           label: 'foobar ' + j,
-          color: 'hsla(' + Math.random() * 360 + ", 100%, 50%, 1)"
+          color: 'rgb(' + Math.round(Math.random() * 100) + '%, ' + Math.round(Math.random() * 100) + '%, ' + Math.round(Math.random() * 100) + '%)'
         });
       }
       // console.timeEnd("generatechart");
 
       c.draw();
-      c.drawDecorations();
+      // c.drawDecorations();
 
       var x = points;
       var addAPoint = function() {
@@ -122,14 +123,14 @@
       // setTimeout(addAPoint,100);
 
 
-      $('#chartContainer').mouseleave(function(e) {
-        tracker.x1 = undefined;
-        c.drawDecorations();
-      });
-      $('#chartContainer').mousemove(function(e) {
-        tracker.x1 = e.offsetX;
-        c.drawDecorations();
-      });
+      // $('#chartContainer').mouseleave(function(e) {
+      //   tracker.x1 = undefined;
+      //   c.drawDecorations();
+      // });
+      // $('#chartContainer').mousemove(function(e) {
+      //   tracker.x1 = e.offsetX;
+      //   c.drawDecorations();
+      // });
     });
     </script>
   </body>

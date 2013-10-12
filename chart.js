@@ -26,8 +26,8 @@ function chart(parent) {
   };
   this.parent = parent;
 
-  this.height = parent.clientHeight;
-  this.width = parent.clientWidth;
+  this.height = parent.height();
+  this.width = parent.width();
 
   // Add the chart canvas
   this.element = document.createElement('canvas');
@@ -37,8 +37,52 @@ function chart(parent) {
   this.element.width = this.width;
   this.element.height = this.height;
   this.element.style.zIndex = 0;
-  parent.appendChild(this.element);
-  this.ctx = this.element.getContext('2d');
+  // parent.appendChild(this.element);
+  // this.ctx = this.element.getContext('2d');
+  var renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.autoClear = true;
+  // this.ctx = this.element.getContext("webgl") || this.element.getContext("experimental-webgl");
+
+  var camera =
+    new THREE.PerspectiveCamera(
+    45,
+    500 / 200,
+    0.1,
+    1000
+  );
+
+  var scene = new THREE.Scene();
+
+  camera.position.z = 242;
+  renderer.setSize(500, 200);
+  parent.append(renderer.domElement);
+
+var sphere = new THREE.Mesh(
+
+  new THREE.SphereGeometry(50, 16, 16),
+
+  new THREE.MeshLambertMaterial(
+    {
+      color: 0x000000
+    })
+);
+
+// add the sphere to the scene
+// scene.add(sphere);
+
+  scene.add(camera);
+
+var pointLight =
+  new THREE.PointLight(0xFFFFFF);
+
+// set its position
+pointLight.position.x = 10;
+pointLight.position.y = 50;
+pointLight.position.z = 130;
+
+// add to the scene
+scene.add(pointLight);
+
 
   // Add the topmost "decoration" canvas
   this.decoElement = document.createElement('canvas');
@@ -48,14 +92,9 @@ function chart(parent) {
   this.decoElement.width = this.width;
   this.decoElement.height = this.height;
   this.decoElement.style.zIndex = 1;
-  parent.appendChild(this.decoElement);
+  // parent.appendChild(this.decoElement);
   this.decoCtx = this.decoElement.getContext('2d');
 
-  // Create an in-memory canvas!
-  this.memElement = document.createElement('canvas');
-  this.memElement.width = this.width;
-  this.memElement.height = this.height;
-  this.memCtx = this.memElement.getContext('2d');
 
   this.getContext = function(name) {
     return this.contexts[name];
@@ -171,10 +210,10 @@ function chart(parent) {
     // Create the scales if they don't exist.
     if(ctx.domainScale === undefined) {
       ctx.domainScale = this.makeScale(ctx.domainScaleType);
-      ctx.domainScale.range([0, this.width]);
+      ctx.domainScale.range([-this.width / 2, this.width / 2]);
     
       ctx.rangeScale = this.makeScale(ctx.rangeScaleType);;
-      ctx.rangeScale.range([this.height, 0]);
+      ctx.rangeScale.range([-this.height / 2, this.height / 2]);
     }
 
     // Some help for log scales, which can't have a 0!
@@ -221,26 +260,38 @@ function chart(parent) {
     // console.time('draw');
 
     // Note that we're drawing on the in-memory canvas.
-    var ctx = this.memCtx;
-    ctx.clearRect(0, 0, this.width, this.height);
-
+    var ctx = this.ctx;
+    // ctx.clearRect(0, 0, this.width, this.height);
+    
+    var lines = [];
     // Iterate over each context
     for(var ctxName in this.contexts) {
       var c = this.contexts[ctxName];
 
       // Iterate over each series
       for(var j = 0; j < c.series.length; j++) {
+        
+        var culer = new THREE.Color(c.series[j].color);
+        var mat = new THREE.LineBasicMaterial(
+        {
+          color: culer.getHex()
+        });
+
         // Create a new path for each series.
-        ctx.beginPath();
+        // ctx.beginPath();
         // Set color
-        ctx.strokeStyle = c.series[j].color;
-        ctx.lineWidth = 1;
+        // ctx.strokeStyle = c.series[j].color;
+        // ctx.lineWidth = 1;
+
+        var geometry = new THREE.Geometry();
 
         for(var k = 0; k < c.series[j].x.length; k++) {
           // Rounded to avoid sub-pixel rendering which isn't really useful
-          ctx.lineTo(c.domainScale(c.series[j].x[k]), c.rangeScale(c.series[j].y[k]));
+          // ctx.lineTo(c.domainScale(c.series[j].x[k]), c.rangeScale(c.series[j].y[k]));
+          geometry.vertices.push(new THREE.Vector3(c.domainScale(c.series[j].x[k]), c.rangeScale(c.series[j].y[k]), 0));
+          // geometry.vertices.push(new THREE.Vector3(c.series[j].x[k], c.series[j].y[k], 0));
         }
-        ctx.stroke();
+        // ctx.stroke();
 
         // If line point is desired.
         // ctx.beginPath();
@@ -254,12 +305,21 @@ function chart(parent) {
         //     ctx.arc(c.domainScale(p[0]), c.rangeScale(p[1]), 2, 0, 2 * Math.PI, true);
         // });
         // ctx.fill();
+        var line = new THREE.Line(geometry, mat);
+        lines.push(line);
+        scene.add(line);
       }
     }
 
+    renderer.render(scene, camera);
+
+    for(var o = 0; o < lines.length; o++) {
+      scene.remove(lines[o]);
+    }
+
     // Copy the contents on the in-memory canvas into the displayed one.
-    this.ctx.clearRect(0, 0, this.width, this.height);
-    this.ctx.drawImage(this.memElement, 0, 0);
+    // this.ctx.clearRect(0, 0, this.width, this.height);
+    // this.ctx.drawImage(this.memElement, 0, 0);
     // console.timeEnd('draw');
   }
 
