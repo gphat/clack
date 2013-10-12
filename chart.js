@@ -229,6 +229,7 @@ function chart(parent, width, height, axes) {
   this.draw = function() {
     // console.time('draw');
 
+    // Only create the axes if they don't already exist.
     if(this.axes) {
       var defCtx = this.contexts['default'];
 
@@ -267,6 +268,8 @@ function chart(parent, width, height, axes) {
           .attr("transform", "translate(40,0)")
           .call(defCtx.rangeAxis);
       } else {
+        // If the axes already exist transition them so they can be updated
+        // if they have changed.
         this.gx.transition().call(defCtx.domainAxis);
         this.gy.transition().call(defCtx.rangeAxis);
       }
