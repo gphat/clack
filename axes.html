@@ -69,7 +69,7 @@
     $(document).ready(function() {
 
       var c = new chart(
-        document.getElementById('chartContainer'), 500, 200
+        document.getElementById('chartContainer'), 500, 200, true
       );
 
       var tracker = {
@@ -112,15 +112,15 @@
         for(var j = 0; j <= series; j++) {
           var y = Math.floor(Math.random() * 50);
           // console.time('redraw');
-          c.addToSeries('default', j, [x], [(j + 1) * Math.sin(2 * Math.PI * j + x)]);
+          c.addToSeries('default', j, [x], [(j + 1) * Math.sin(2 * Math.PI * j + x)], true);
 
           c.draw();
           // console.timeEnd('redraw');
           x += 1;
         }
-        setTimeout(addAPoint,100);
+        setTimeout(addAPoint,500);
       }
-      // setTimeout(addAPoint,100);
+      setTimeout(addAPoint,500);
 
       // XXX These need to be on the inner canvas, not on the container.
       $('#chartContainer').mouseleave(function(e) {

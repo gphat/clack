@@ -6,7 +6,7 @@
 // Ideas
 // Is this applicable: http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
 
-function chart(parent, width, height) {
+function chart(parent, width, height, axes) {
   this.contexts = {
     default: {    
       this: {},
@@ -27,7 +27,7 @@ function chart(parent, width, height) {
     }
   };
   this.parent = parent;
-
+  this.axes = axes;
   this.width = width; //parent.clientWidth;
   this.height = height; //parent.clientHeight;
 
@@ -229,45 +229,47 @@ function chart(parent, width, height) {
   this.draw = function() {
     // console.time('draw');
 
-    var defCtx = this.contexts['default'];
+    if(this.axes) {
+      var defCtx = this.contexts['default'];
 
-    if(defCtx.domainAxis === undefined) {
-      this.d3shit.selectAll("line.x")
-        .data(defCtx.domainScale.ticks(5))
-        .enter().append("line")
-        .attr("class", "x")
-        .attr("x1", defCtx.domainScale)
-        .attr("x2", defCtx.domainScale)
-        .attr("y1", 0)
-        .attr("y2", this.height)
-        .attr("transform", "translate(40, 0)")
-        .style("stroke", "#ccc");
+      if(defCtx.domainAxis === undefined) {
+        this.d3shit.selectAll("line.x")
+          .data(defCtx.domainScale.ticks(5))
+          .enter().append("line")
+          .attr("class", "x")
+          .attr("x1", defCtx.domainScale)
+          .attr("x2", defCtx.domainScale)
+          .attr("y1", 0)
+          .attr("y2", this.height)
+          .attr("transform", "translate(40, 0)")
+          .style("stroke", "#ccc");
 
-      this.d3shit.selectAll("line.y")
-        .data(defCtx.rangeScale.ticks(5))
-        .enter().append("line")
-        .attr("class", "y")
-        .attr("x1", 0)
-        .attr("x2", this.width)
-        .attr("y1", defCtx.rangeScale)
-        .attr("y2", defCtx.rangeScale)
-        .attr("transform", "translate(40, 0)")
-        .style("stroke", "#ccc");
+        this.d3shit.selectAll("line.y")
+          .data(defCtx.rangeScale.ticks(5))
+          .enter().append("line")
+          .attr("class", "y")
+          .attr("x1", 0)
+          .attr("x2", this.width)
+          .attr("y1", defCtx.rangeScale)
+          .attr("y2", defCtx.rangeScale)
+          .attr("transform", "translate(40, 0)")
+          .style("stroke", "#ccc");
 
-      defCtx.domainAxis = d3.svg.axis().scale(defCtx.domainScale).orient('bottom');
-      defCtx.rangeAxis = d3.svg.axis().scale(defCtx.rangeScale).orient('left');
-      this.gx = this.d3shit.append('g')
-        .attr("class", "axis")
-        .attr("transform", "translate(40,200)")
-        .call(defCtx.domainAxis);
-       
-      this.gy = this.d3shit.append('g')
-        .attr("class", "axis")
-        .attr("transform", "translate(40,0)")
-        .call(defCtx.rangeAxis);
-    } else {
-      this.gx.transition().call(defCtx.domainAxis);
-      this.gy.transition().call(defCtx.rangeAxis);
+        defCtx.domainAxis = d3.svg.axis().scale(defCtx.domainScale).orient('bottom');
+        defCtx.rangeAxis = d3.svg.axis().scale(defCtx.rangeScale).orient('left');
+        this.gx = this.d3shit.append('g')
+          .attr("class", "axis")
+          .attr("transform", "translate(40,200)")
+          .call(defCtx.domainAxis);
+         
+        this.gy = this.d3shit.append('g')
+          .attr("class", "axis")
+          .attr("transform", "translate(40,0)")
+          .call(defCtx.rangeAxis);
+      } else {
+        this.gx.transition().call(defCtx.domainAxis);
+        this.gy.transition().call(defCtx.rangeAxis);
+      }
     }
 
     // Note that we're drawing on the in-memory canvas.

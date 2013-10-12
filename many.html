@@ -41,6 +41,7 @@
                 <li><a href="fast.html">Fast</a></li>
                 <li><a href="many.html">Many</a></li>
                 <li><a href="big.html">Big</a></li>
+                <li><a href="axes.html">Axes</a></li>
               </ul>
             </li>
           </ul>
@@ -71,15 +72,12 @@
         var div = document.createElement('div');
         div.id = 'chart' + x;
         div.style.display = "inline-block";
-        div.style.border = "1px solid black";
         div.style.margin = "5px";
         div.style.position = "relative";
-        div.style.width = "350px";
-        div.style.height = "200px";
         document.getElementById('root').appendChild(div);
 
         var c = new chart(
-          document.getElementById('chart' + x)
+          document.getElementById('chart' + x), 350, 200
         );
 
         var series = 4;
