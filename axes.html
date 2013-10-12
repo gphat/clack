@@ -121,16 +121,6 @@
         setTimeout(addAPoint,500);
       }
       setTimeout(addAPoint,500);
-
-      // XXX These need to be on the inner canvas, not on the container.
-      $('#chartContainer').mouseleave(function(e) {
-        tracker.x1 = undefined;
-        c.drawDecorations();
-      });
-      $('#chartContainer').mousemove(function(e) {
-        tracker.x1 = e.offsetX;
-        c.drawDecorations();
-      });
     });
     </script>
   </body>
