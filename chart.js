@@ -239,6 +239,55 @@ CLACK.Chart = function(parent, width, height, axes) {
   this.draw = function() {
     // console.time('draw');
 
+    // Handle the axes in the common draw method before calling the renderer.
+    // Only create the axes if they don't already exist.
+    if(this.axes) {
+      var defCtx = this.contexts['default'];
+
+      if(defCtx.domainAxis === undefined) {
+        // This isn't axes, it's ticks! XXX
+        this.d3shit.selectAll("line.x")
+          .data(defCtx.domainScale.ticks(5))
+          .enter().append("line")
+          .attr("class", "x")
+          .attr("x1", defCtx.domainScale)
+          .attr("x2", defCtx.domainScale)
+          .attr("y1", 0)
+          .attr("y2", this.height)
+          .attr("transform", "translate(40, 0)")
+          .style("stroke", "#ccc");
+
+        // This isn't axes, it's ticks! XXX
+        this.d3shit.selectAll("line.y")
+          .data(defCtx.rangeScale.ticks(5))
+          .enter().append("line")
+          .attr("class", "y")
+          .attr("x1", 0)
+          .attr("x2", this.width)
+          .attr("y1", defCtx.rangeScale)
+          .attr("y2", defCtx.rangeScale)
+          .attr("transform", "translate(40, 0)")
+          .style("stroke", "#ccc");
+
+        defCtx.domainAxis = d3.svg.axis().scale(defCtx.domainScale).orient('bottom').ticks(5);
+        defCtx.rangeAxis = d3.svg.axis().scale(defCtx.rangeScale).orient('left').ticks(5);
+        this.gx = this.d3shit.append('g')
+          .attr("class", "axis")
+          .attr("transform", "translate(40,200)")
+          .call(defCtx.domainAxis);
+         
+        this.gy = this.d3shit.append('g')
+          .attr("class", "axis")
+          .attr("transform", "translate(40,0)")
+          .call(defCtx.rangeAxis);
+      } else {
+        // If the axes already exist transition them so they can be updated
+        // if they have changed.
+        this.gx.transition().call(defCtx.domainAxis);
+        this.gy.transition().call(defCtx.rangeAxis);
+      }
+    }
+
     this.renderer.draw(this);
 
     // console.timeEnd('draw');
@@ -291,51 +340,6 @@ CLACK.Chart = function(parent, width, height, axes) {
 CLACK.LineRenderer = function() {
 
   this.draw = function(chart) {
-    // Only create the axes if they don't already exist.
-    if(chart.axes) {
-      var defCtx = chart.contexts['default'];
-
-      if(defCtx.domainAxis === undefined) {
-        chart.d3shit.selectAll("line.x")
-          .data(defCtx.domainScale.ticks(5))
-          .enter().append("line")
-          .attr("class", "x")
-          .attr("x1", defCtx.domainScale)
-          .attr("x2", defCtx.domainScale)
-          .attr("y1", 0)
-          .attr("y2", this.height)
-          .attr("transform", "translate(40, 0)")
-          .style("stroke", "#ccc");
-
-        chart.d3shit.selectAll("line.y")
-          .data(defCtx.rangeScale.ticks(5))
-          .enter().append("line")
-          .attr("class", "y")
-          .attr("x1", 0)
-          .attr("x2", this.width)
-          .attr("y1", defCtx.rangeScale)
-          .attr("y2", defCtx.rangeScale)
-          .attr("transform", "translate(40, 0)")
-          .style("stroke", "#ccc");
-
-        defCtx.domainAxis = d3.svg.axis().scale(defCtx.domainScale).orient('bottom').ticks(5);
-        defCtx.rangeAxis = d3.svg.axis().scale(defCtx.rangeScale).orient('left').ticks(5);
-        chart.gx = chart.d3shit.append('g')
-          .attr("class", "axis")
-          .attr("transform", "translate(40,200)")
-          .call(defCtx.domainAxis);
-         
-        chart.gy = chart.d3shit.append('g')
-          .attr("class", "axis")
-          .attr("transform", "translate(40,0)")
-          .call(defCtx.rangeAxis);
-      } else {
-        // If the axes already exist transition them so they can be updated
-        // if they have changed.
-        chart.gx.transition().call(defCtx.domainAxis);
-        chart.gy.transition().call(defCtx.rangeAxis);
-      }
-    }
 
     // Note that we're drawing on the in-memory canvas.
     var ctx = chart.memCtx;
