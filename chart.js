@@ -428,8 +428,8 @@ CLACK.ScatterPlotRenderer = function() {
   }
 }
 
-// A HeatMap Renderer
-CLACK.HeatMapRenderer = function() {
+// A Histogram HeatMap Renderer
+CLACK.HistogramHeatMapRenderer = function() {
   this.draw = function(chart) {
 
     // Note that we're drawing on the in-memory canvas.
