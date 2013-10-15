@@ -248,7 +248,7 @@ CLACK.Chart = function(parent, width, height, axes) {
 
   // Draw the chart. Erases everything first.
   this.draw = function() {
-    // console.time('draw');
+    console.time('draw');
 
     // Handle the axes in the common draw method before calling the renderer.
     // Only create the axes if they don't already exist.
@@ -301,7 +301,7 @@ CLACK.Chart = function(parent, width, height, axes) {
 
     this.renderer.draw(this);
 
-    // console.timeEnd('draw');
+    console.timeEnd('draw');
   }
 
   this.drawDecorations = function() {
@@ -456,22 +456,19 @@ CLACK.HeatMapRenderer = function() {
 
       // Create a new histogram and set it's range to the min/max for
       // the entire set of series.
+      var binCount = Math.round(chart.height / 5)
       var layout = d3.layout.histogram()
         // Set the number of bins to the range of our entire context's Y.
-        .bins(c.yrange + 1);
+        .bins(binCount);
+      // console.log("Bins: " + c.yrange + 1);
       layout.range([ c.ymin, c.ymax ]);
 
+      var bheight = chart.height / binCount;
       // The width for each bin
       var bwidth = chart.width / Object.keys(exes).length;
 
-      console.log("width is " + chart.width);
-      console.log("x count is " + Object.keys(exes).length);
-      console.log("bwidth is " + bwidth);
-
-      console.log("Range is " + c.yrange);
-
       // Create a color range that spans from 0 to the number of Y values in our histogram.
-      var colorScale = d3.scale.linear().domain([ 0, c.maxLength ]).range([ 0, 1 ]);
+      var colorScale = d3.scale.log().domain([ 1, c.maxLength ]).range([ 0, 2 ]);
 
       // For each bin…
       var colIndex = 0;
@@ -482,21 +479,27 @@ CLACK.HeatMapRenderer = function() {
         // Iterate over the bins.
         for(var bin = 0; bin < histo.length; bin++) {
           var v = histo[bin];
-        
           // Only draw a square if we have a value. Don't waste time on empty spots.
           if(v.y > 0) {
-            ctx.arc(c.domainScale(col), c.rangeScale(v.x), v.y, 0, 2*Math.PI);
+            // ctx.arc(c.domainScale(col), c.rangeScale(v.x), v.y, 0, 2*Math.PI);
             ctx.beginPath();
-            ctx.fillStyle = 'rgba(0,0,255,' + colorScale(v.y) + ')';
+            ctx.fillStyle = 'rgba(0,0,255,' + (1 - colorScale(v.y)) + ')';
+            console.log('rgba(0,0,255,' + ( 1 - colorScale(v.y)) + ')');
             // Calculate a bar height, which will be the 1 - dx from the histogram's bin
             // times the height of the whole chart.
-            var bheight =  (1 - v.dx) * chart.height;
             ctx.fillRect(
               0 + (colIndex * bwidth),              // x is the offset from 0
-              chart.height - ((bin + 1) * bheight), // y is the offset from the bottom, times the bin we're on
+              chart.height - ((bin + 1) * bheight),
               bwidth, // bar's width (evenly spaced based on the number of columns)
               bheight // And the height!
             );
+            // ctx.strokeStyle = 'rgba(0,0,0,.2)';
+            // ctx.strokeRect(
+            //   0 + (colIndex * bwidth),              // x is the offset from 0
+            //   chart.height - ((bin + 1) * bheight),
+            //   bwidth, // bar's width (evenly spaced based on the number of columns)
+            //   bheight // And the height!
+            // );
           }
         }
         colIndex++;
