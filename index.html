@@ -71,6 +71,7 @@
       var c = new CLACK.Chart(
         document.getElementById('chartContainer'), 500, 200, true
       );
+      c.renderer = new CLACK.ScatterPlotRenderer();
 
       var tracker = {
         x1: undefined,

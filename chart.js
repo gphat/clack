@@ -73,8 +73,8 @@ CLACK.Chart = function(parent, width, height, axes) {
   this.memElement.height = this.height;
   this.memCtx = this.memElement.getContext('2d');
 
+  // The default.
   this.renderer = new CLACK.LineRenderer();
-  console.log(this.renderer);
 
   this.getContext = function(name) {
     return this.contexts[name];
@@ -337,6 +337,7 @@ CLACK.Chart = function(parent, width, height, axes) {
   }
 }
 
+// A Line Renderer!
 CLACK.LineRenderer = function() {
 
   this.draw = function(chart) {
@@ -358,7 +359,6 @@ CLACK.LineRenderer = function() {
         ctx.lineWidth = 1;
 
         for(var k = 0; k < c.series[j].x.length; k++) {
-          // Rounded to avoid sub-pixel rendering which isn't really useful
           ctx.lineTo(c.domainScale(c.series[j].x[k]), c.rangeScale(c.series[j].y[k]));
         }
         ctx.stroke();
@@ -382,4 +382,37 @@ CLACK.LineRenderer = function() {
     chart.ctx.clearRect(0, 0, this.width, this.height);
     chart.ctx.drawImage(chart.memElement, 0, 0);
   } 
+}
+
+// A Scatter Plot Renderer
+CLACK.ScatterPlotRenderer = function() {
+  this.draw = function(chart) {
+
+    // Note that we're drawing on the in-memory canvas.
+    var ctx = chart.memCtx;
+    ctx.clearRect(0, 0, chart.width, chart.height);
+
+    // Iterate over each context
+    for(var ctxName in chart.contexts) {
+      var c = chart.contexts[ctxName];
+
+      // Iterate over each series
+      for(var j = 0; j < c.series.length; j++) {
+        // Create a new path for each series.
+        ctx.beginPath();
+        // Set color
+        ctx.fillStyle = c.series[j].color;
+        ctx.lineWidth = 1;
+
+        for(var k = 0; k < c.series[j].x.length; k++) {
+          ctx.arc(c.domainScale(c.series[j].x[k]), c.rangeScale(c.series[j].y[k]), 2, 0, 2*Math.PI);
+        }
+        ctx.fill();
+      }
+    }
+
+    // Copy the contents on the in-memory canvas into the displayed one.
+    chart.ctx.clearRect(0, 0, this.width, this.height);
+    chart.ctx.drawImage(chart.memElement, 0, 0);
+  }
 }
