@@ -14,7 +14,7 @@
   <script src="/chart.js" charset="utf-8"></script>  
   <script>
   test("simple work", function() {
-    var c = new chart(document.getElementById('myCanvas'));
+    var c = new CLACK.Chart(document.getElementById('myCanvas'));
     
     ok(c !== undefined, "chart is defined");
 
@@ -60,8 +60,6 @@
     ok(ctx.ymax === 32, 'ymax is 32');
     ok(ctx.ymin === 8, 'ymin is 8');
     ok(ctx.yrange === 24, 'yrange is 24');
-
-
   });
   </script>
 </body>

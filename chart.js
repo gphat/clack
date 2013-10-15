@@ -6,7 +6,9 @@
 // Ideas
 // Is this applicable: http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
 
-function chart(parent, width, height, axes) {
+var CLACK = CLACK || {};
+
+CLACK.Chart = function(parent, width, height, axes) {
   this.contexts = {
     default: {    
       this: {},
@@ -28,9 +30,12 @@ function chart(parent, width, height, axes) {
   };
   this.parent = parent;
   this.axes = axes;
-  this.width = width; //parent.clientWidth;
-  this.height = height; //parent.clientHeight;
 
+  // Some error checking on this is needed. XXX
+  this.width = width;
+  this.height = height;
+
+  // Some control on the grid? XXX
   this.d3shit = d3.select(parent)
     .append("svg")
     .attr("class", "chart")
@@ -41,6 +46,7 @@ function chart(parent, width, height, axes) {
   // Add the chart canvas
   this.element = document.createElement('canvas');
   this.element.style.position = 'absolute';
+  // Only if the axes are here… XXX
   this.element.style.left = "40px";
   this.element.style.top = 0;
   this.element.width = this.width;
@@ -52,6 +58,7 @@ function chart(parent, width, height, axes) {
   // Add the topmost "decoration" canvas
   this.decoElement = document.createElement('canvas');
   this.decoElement.style.position = 'absolute';
+  // Only if the axes are here… XXX
   this.decoElement.style.left = "40px";
   this.decoElement.style.top = 0;
   this.decoElement.width = this.width;
@@ -65,6 +72,9 @@ function chart(parent, width, height, axes) {
   this.memElement.width = this.width;
   this.memElement.height = this.height;
   this.memCtx = this.memElement.getContext('2d');
+
+  this.renderer = new CLACK.LineRenderer();
+  console.log(this.renderer);
 
   this.getContext = function(name) {
     return this.contexts[name];
@@ -225,96 +235,12 @@ function chart(parent, width, height, axes) {
     }
   }
 
-  // Draw the cart. Erases everything first.
+  // Draw the chart. Erases everything first.
   this.draw = function() {
     // console.time('draw');
 
-    // Only create the axes if they don't already exist.
-    if(this.axes) {
-      var defCtx = this.contexts['default'];
+    this.renderer.draw(this);
 
-      if(defCtx.domainAxis === undefined) {
-        this.d3shit.selectAll("line.x")
-          .data(defCtx.domainScale.ticks(5))
-          .enter().append("line")
-          .attr("class", "x")
-          .attr("x1", defCtx.domainScale)
-          .attr("x2", defCtx.domainScale)
-          .attr("y1", 0)
-          .attr("y2", this.height)
-          .attr("transform", "translate(40, 0)")
-          .style("stroke", "#ccc");
-
-        this.d3shit.selectAll("line.y")
-          .data(defCtx.rangeScale.ticks(5))
-          .enter().append("line")
-          .attr("class", "y")
-          .attr("x1", 0)
-          .attr("x2", this.width)
-          .attr("y1", defCtx.rangeScale)
-          .attr("y2", defCtx.rangeScale)
-          .attr("transform", "translate(40, 0)")
-          .style("stroke", "#ccc");
-
-        defCtx.domainAxis = d3.svg.axis().scale(defCtx.domainScale).orient('bottom').ticks(5);
-        defCtx.rangeAxis = d3.svg.axis().scale(defCtx.rangeScale).orient('left').ticks(5);
-        this.gx = this.d3shit.append('g')
-          .attr("class", "axis")
-          .attr("transform", "translate(40,200)")
-          .call(defCtx.domainAxis);
-         
-        this.gy = this.d3shit.append('g')
-          .attr("class", "axis")
-          .attr("transform", "translate(40,0)")
-          .call(defCtx.rangeAxis);
-      } else {
-        // If the axes already exist transition them so they can be updated
-        // if they have changed.
-        this.gx.transition().call(defCtx.domainAxis);
-        this.gy.transition().call(defCtx.rangeAxis);
-      }
-    }
-
-    // Note that we're drawing on the in-memory canvas.
-    var ctx = this.memCtx;
-    ctx.clearRect(0, 0, this.width, this.height);
-
-    // Iterate over each context
-    for(var ctxName in this.contexts) {
-      var c = this.contexts[ctxName];
-
-      // Iterate over each series
-      for(var j = 0; j < c.series.length; j++) {
-        // Create a new path for each series.
-        ctx.beginPath();
-        // Set color
-        ctx.strokeStyle = c.series[j].color;
-        ctx.lineWidth = 1;
-
-        for(var k = 0; k < c.series[j].x.length; k++) {
-          // Rounded to avoid sub-pixel rendering which isn't really useful
-          ctx.lineTo(c.domainScale(c.series[j].x[k]), c.rangeScale(c.series[j].y[k]));
-        }
-        ctx.stroke();
-
-        // If line point is desired.
-        // ctx.beginPath();
-        // _.each(_.zip(s.x, s.y), function(p) {
-        //     ctx.fillStyle = s.color;
-        //     // Rounded to avoid sub-pixel rendering which isn't really useful
-        //     ctx.moveTo(
-        //       Math.round(c.domainScale(p[0])),
-        //       Math.round(c.rangeScale(p[1]))
-        //     );
-        //     ctx.arc(c.domainScale(p[0]), c.rangeScale(p[1]), 2, 0, 2 * Math.PI, true);
-        // });
-        // ctx.fill();
-      }
-    }
-
-    // Copy the contents on the in-memory canvas into the displayed one.
-    this.ctx.clearRect(0, 0, this.width, this.height);
-    this.ctx.drawImage(this.memElement, 0, 0);
     // console.timeEnd('draw');
   }
 
@@ -360,4 +286,96 @@ function chart(parent, width, height, axes) {
     this.decoCtx.clearRect(0, 0, this.width, this.height);
     this.decoCtx.drawImage(this.memElement, 0, 0);
   }
+}
+
+CLACK.LineRenderer = function() {
+
+  this.draw = function(chart) {
+    // Only create the axes if they don't already exist.
+    if(chart.axes) {
+      var defCtx = chart.contexts['default'];
+
+      if(defCtx.domainAxis === undefined) {
+        chart.d3shit.selectAll("line.x")
+          .data(defCtx.domainScale.ticks(5))
+          .enter().append("line")
+          .attr("class", "x")
+          .attr("x1", defCtx.domainScale)
+          .attr("x2", defCtx.domainScale)
+          .attr("y1", 0)
+          .attr("y2", this.height)
+          .attr("transform", "translate(40, 0)")
+          .style("stroke", "#ccc");
+
+        chart.d3shit.selectAll("line.y")
+          .data(defCtx.rangeScale.ticks(5))
+          .enter().append("line")
+          .attr("class", "y")
+          .attr("x1", 0)
+          .attr("x2", this.width)
+          .attr("y1", defCtx.rangeScale)
+          .attr("y2", defCtx.rangeScale)
+          .attr("transform", "translate(40, 0)")
+          .style("stroke", "#ccc");
+
+        defCtx.domainAxis = d3.svg.axis().scale(defCtx.domainScale).orient('bottom').ticks(5);
+        defCtx.rangeAxis = d3.svg.axis().scale(defCtx.rangeScale).orient('left').ticks(5);
+        chart.gx = chart.d3shit.append('g')
+          .attr("class", "axis")
+          .attr("transform", "translate(40,200)")
+          .call(defCtx.domainAxis);
+         
+        chart.gy = chart.d3shit.append('g')
+          .attr("class", "axis")
+          .attr("transform", "translate(40,0)")
+          .call(defCtx.rangeAxis);
+      } else {
+        // If the axes already exist transition them so they can be updated
+        // if they have changed.
+        chart.gx.transition().call(defCtx.domainAxis);
+        chart.gy.transition().call(defCtx.rangeAxis);
+      }
+    }
+
+    // Note that we're drawing on the in-memory canvas.
+    var ctx = chart.memCtx;
+    ctx.clearRect(0, 0, chart.width, chart.height);
+
+    // Iterate over each context
+    for(var ctxName in chart.contexts) {
+      var c = chart.contexts[ctxName];
+
+      // Iterate over each series
+      for(var j = 0; j < c.series.length; j++) {
+        // Create a new path for each series.
+        ctx.beginPath();
+        // Set color
+        ctx.strokeStyle = c.series[j].color;
+        ctx.lineWidth = 1;
+
+        for(var k = 0; k < c.series[j].x.length; k++) {
+          // Rounded to avoid sub-pixel rendering which isn't really useful
+          ctx.lineTo(c.domainScale(c.series[j].x[k]), c.rangeScale(c.series[j].y[k]));
+        }
+        ctx.stroke();
+
+        // If line point is desired.
+        // ctx.beginPath();
+        // _.each(_.zip(s.x, s.y), function(p) {
+        //     ctx.fillStyle = s.color;
+        //     // Rounded to avoid sub-pixel rendering which isn't really useful
+        //     ctx.moveTo(
+        //       Math.round(c.domainScale(p[0])),
+        //       Math.round(c.rangeScale(p[1]))
+        //     );
+        //     ctx.arc(c.domainScale(p[0]), c.rangeScale(p[1]), 2, 0, 2 * Math.PI, true);
+        // });
+        // ctx.fill();
+      }
+    }
+
+    // Copy the contents on the in-memory canvas into the displayed one.
+    chart.ctx.clearRect(0, 0, this.width, this.height);
+    chart.ctx.drawImage(chart.memElement, 0, 0);
+  } 
 }
