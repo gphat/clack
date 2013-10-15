@@ -257,28 +257,28 @@ CLACK.Chart = function(parent, width, height, axes) {
 
       if(defCtx.domainAxis === undefined) {
         // This isn't axes, it's ticks! XXX
-        // this.d3shit.selectAll("line.x")
-        //   .data(defCtx.domainScale.ticks(5))
-        //   .enter().append("line")
-        //   .attr("class", "x")
-        //   .attr("x1", defCtx.domainScale)
-        //   .attr("x2", defCtx.domainScale)
-        //   .attr("y1", 0)
-        //   .attr("y2", this.height)
-        //   .attr("transform", "translate(40, 0)")
-        //   .style("stroke", "#ccc");
+        this.d3shit.selectAll("line.x")
+          .data(defCtx.domainScale.ticks(5))
+          .enter().append("line")
+          .attr("class", "x")
+          .attr("x1", defCtx.domainScale)
+          .attr("x2", defCtx.domainScale)
+          .attr("y1", 0)
+          .attr("y2", this.height)
+          .attr("transform", "translate(40, 0)")
+          .style("stroke", "#ccc");
 
-        // // This isn't axes, it's ticks! XXX
-        // this.d3shit.selectAll("line.y")
-        //   .data(defCtx.rangeScale.ticks(5))
-        //   .enter().append("line")
-        //   .attr("class", "y")
-        //   .attr("x1", 0)
-        //   .attr("x2", this.width)
-        //   .attr("y1", defCtx.rangeScale)
-        //   .attr("y2", defCtx.rangeScale)
-        //   .attr("transform", "translate(40, 0)")
-        //   .style("stroke", "#ccc");
+        // This isn't axes, it's ticks! XXX
+        this.d3shit.selectAll("line.y")
+          .data(defCtx.rangeScale.ticks(5))
+          .enter().append("line")
+          .attr("class", "y")
+          .attr("x1", 0)
+          .attr("x2", this.width)
+          .attr("y1", defCtx.rangeScale)
+          .attr("y2", defCtx.rangeScale)
+          .attr("transform", "translate(40, 0)")
+          .style("stroke", "#ccc");
 
         defCtx.domainAxis = d3.svg.axis().scale(defCtx.domainScale).orient('bottom').ticks(5);
         defCtx.rangeAxis = d3.svg.axis().scale(defCtx.rangeScale).orient('left').ticks(5);
