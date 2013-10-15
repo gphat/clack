@@ -15,6 +15,8 @@ CLACK.Chart = function(parent, width, height, axes) {
       domainAxis: undefined,
       domainScale: undefined,
       domainScaleType: 'linear',
+      maxLength: undefined,
+      minLength: undefined,
       rangeAxis: undefined,
       rangeScale: undefined,
       rangeScaleType: 'linear',
@@ -149,12 +151,19 @@ CLACK.Chart = function(parent, width, height, axes) {
     var ctx = this.contexts[ctxName];
 
     // Iterate through each series, establishing the maxes of x and y.
+    // Start with the values backwards so that min and max work.
     var xmax = -Infinity;
     var ymax = -Infinity;
     var xmin = Infinity;
     var ymin = Infinity;
+    var maxLength = -Infinity;
+    var minLength = Infinity;
     for(var i = 0; i < ctx.series.length; i++) {
       var s = ctx.series[i];
+      // It is assumed that there are an equal number of xs and ys, but that's not
+      // asserted anywhere. XXX
+      maxLength = Math.max(maxLength, s.x.length);
+      minLength = Math.min(minLength, s.x.length);
       xmax = Math.max(xmax, s.xmax);
       xmin = Math.min(xmin, s.xmin);
       ymax = Math.max(ymax, s.ymax);
@@ -178,6 +187,8 @@ CLACK.Chart = function(parent, width, height, axes) {
       }
     }
 
+    ctx.maxLength = maxLength;
+    ctx.minLength = minLength;
     ctx.xmax = xmax;
     ctx.xmin = xmin;
     ctx.ymax = ymax;
@@ -246,28 +257,28 @@ CLACK.Chart = function(parent, width, height, axes) {
 
       if(defCtx.domainAxis === undefined) {
         // This isn't axes, it's ticks! XXX
-        this.d3shit.selectAll("line.x")
-          .data(defCtx.domainScale.ticks(5))
-          .enter().append("line")
-          .attr("class", "x")
-          .attr("x1", defCtx.domainScale)
-          .attr("x2", defCtx.domainScale)
-          .attr("y1", 0)
-          .attr("y2", this.height)
-          .attr("transform", "translate(40, 0)")
-          .style("stroke", "#ccc");
+        // this.d3shit.selectAll("line.x")
+        //   .data(defCtx.domainScale.ticks(5))
+        //   .enter().append("line")
+        //   .attr("class", "x")
+        //   .attr("x1", defCtx.domainScale)
+        //   .attr("x2", defCtx.domainScale)
+        //   .attr("y1", 0)
+        //   .attr("y2", this.height)
+        //   .attr("transform", "translate(40, 0)")
+        //   .style("stroke", "#ccc");
 
-        // This isn't axes, it's ticks! XXX
-        this.d3shit.selectAll("line.y")
-          .data(defCtx.rangeScale.ticks(5))
-          .enter().append("line")
-          .attr("class", "y")
-          .attr("x1", 0)
-          .attr("x2", this.width)
-          .attr("y1", defCtx.rangeScale)
-          .attr("y2", defCtx.rangeScale)
-          .attr("transform", "translate(40, 0)")
-          .style("stroke", "#ccc");
+        // // This isn't axes, it's ticks! XXX
+        // this.d3shit.selectAll("line.y")
+        //   .data(defCtx.rangeScale.ticks(5))
+        //   .enter().append("line")
+        //   .attr("class", "y")
+        //   .attr("x1", 0)
+        //   .attr("x2", this.width)
+        //   .attr("y1", defCtx.rangeScale)
+        //   .attr("y2", defCtx.rangeScale)
+        //   .attr("transform", "translate(40, 0)")
+        //   .style("stroke", "#ccc");
 
         defCtx.domainAxis = d3.svg.axis().scale(defCtx.domainScale).orient('bottom').ticks(5);
         defCtx.rangeAxis = d3.svg.axis().scale(defCtx.rangeScale).orient('left').ticks(5);
@@ -411,6 +422,87 @@ CLACK.ScatterPlotRenderer = function() {
       }
     }
 
+    // Copy the contents on the in-memory canvas into the displayed one.
+    chart.ctx.clearRect(0, 0, this.width, this.height);
+    chart.ctx.drawImage(chart.memElement, 0, 0);
+  }
+}
+
+// A HeatMap Renderer
+CLACK.HeatMapRenderer = function() {
+  this.draw = function(chart) {
+
+    // Note that we're drawing on the in-memory canvas.
+    var ctx = chart.memCtx;
+    ctx.clearRect(0, 0, chart.width, chart.height);
+
+    // Iterate over each context
+    for(var ctxName in chart.contexts) {
+      // Not sure what to do with multiple contexts here yet…
+      var c = chart.contexts[ctxName];
+
+      var exes = {};
+      // Create a map of x values to y values, as we need to bucket them.
+      for(var j = 0; j < c.series.length; j++) {
+        for(var k = 0; k < c.series[j].x.length; k++) {
+          var myX = c.series[j].x[k];
+          if(myX in exes) {
+            exes[myX].push(c.series[j].y[k]);
+          } else {
+            exes[myX] = [ c.series[j].y[k] ];
+          }
+        }
+      }
+
+      // Create a new histogram and set it's range to the min/max for
+      // the entire set of series.
+      var layout = d3.layout.histogram()
+        // Set the number of bins to the range of our entire context's Y.
+        .bins(c.yrange + 1);
+      layout.range([ c.ymin, c.ymax ]);
+
+      // The width for each bin
+      var bwidth = chart.width / Object.keys(exes).length;
+
+      console.log("width is " + chart.width);
+      console.log("x count is " + Object.keys(exes).length);
+      console.log("bwidth is " + bwidth);
+
+      console.log("Range is " + c.yrange);
+
+      // Create a color range that spans from 0 to the number of Y values in our histogram.
+      var colorScale = d3.scale.linear().domain([ 0, c.maxLength ]).range([ 0, 1 ]);
+
+      // For each bin…
+      var colIndex = 0;
+      for(var col in exes) {
+        // Get the histogram for this x position
+        var histo = layout(exes[col]);
+
+        // Iterate over the bins.
+        for(var bin = 0; bin < histo.length; bin++) {
+          var v = histo[bin];
+        
+          // Only draw a square if we have a value. Don't waste time on empty spots.
+          if(v.y > 0) {
+            ctx.arc(c.domainScale(col), c.rangeScale(v.x), v.y, 0, 2*Math.PI);
+            ctx.beginPath();
+            ctx.fillStyle = 'rgba(0,0,255,' + colorScale(v.y) + ')';
+            // Calculate a bar height, which will be the 1 - dx from the histogram's bin
+            // times the height of the whole chart.
+            var bheight =  (1 - v.dx) * chart.height;
+            ctx.fillRect(
+              0 + (colIndex * bwidth),              // x is the offset from 0
+              chart.height - ((bin + 1) * bheight), // y is the offset from the bottom, times the bin we're on
+              bwidth, // bar's width (evenly spaced based on the number of columns)
+              bheight // And the height!
+            );
+          }
+        }
+        colIndex++;
+      }
+    }
+    
     // Copy the contents on the in-memory canvas into the displayed one.
     chart.ctx.clearRect(0, 0, this.width, this.height);
     chart.ctx.drawImage(chart.memElement, 0, 0);

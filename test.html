@@ -37,6 +37,8 @@
     ok(ctx.ymax === 30, 'ymax is 30');
     ok(ctx.ymin === 10, 'ymin is 10');
     ok(ctx.yrange === 20, 'yrange is 20');
+    ok(ctx.minLength === 3, 'minLength is 3');
+    ok(ctx.maxLength === 3, 'maxLength is 3');
 
     c.addToSeries('default', index, [11, -1], [31, 9]);
 
