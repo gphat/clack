@@ -248,7 +248,7 @@ CLACK.Chart = function(parent, width, height, axes) {
 
   // Draw the chart. Erases everything first.
   this.draw = function() {
-    console.time('draw');
+    // console.time('draw');
 
     // Handle the axes in the common draw method before calling the renderer.
     // Only create the axes if they don't already exist.
@@ -301,7 +301,7 @@ CLACK.Chart = function(parent, width, height, axes) {
 
     this.renderer.draw(this);
 
-    console.timeEnd('draw');
+    // console.timeEnd('draw');
   }
 
   this.drawDecorations = function() {
@@ -483,8 +483,7 @@ CLACK.HeatMapRenderer = function() {
           if(v.y > 0) {
             // ctx.arc(c.domainScale(col), c.rangeScale(v.x), v.y, 0, 2*Math.PI);
             ctx.beginPath();
-            ctx.fillStyle = 'rgba(0,0,255,' + (1 - colorScale(v.y)) + ')';
-            console.log('rgba(0,0,255,' + ( 1 - colorScale(v.y)) + ')');
+            ctx.fillStyle = 'rgba(0,0,255,' + colorScale(v.y) + ')';
             // Calculate a bar height, which will be the 1 - dx from the histogram's bin
             // times the height of the whole chart.
             ctx.fillRect(
