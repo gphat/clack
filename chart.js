@@ -468,6 +468,7 @@ CLACK.HeatMapRenderer = function() {
       var bwidth = chart.width / Object.keys(exes).length;
 
       // Create a color range that spans from 0 to the number of Y values in our histogram.
+      // XXX Configurable color, linear versus log scale, inversion, etc
       var colorScale = d3.scale.log().domain([ 1, c.maxLength ]).range([ 0, 2 ]);
 
       // For each bin…
@@ -481,7 +482,6 @@ CLACK.HeatMapRenderer = function() {
           var v = histo[bin];
           // Only draw a square if we have a value. Don't waste time on empty spots.
           if(v.y > 0) {
-            // ctx.arc(c.domainScale(col), c.rangeScale(v.x), v.y, 0, 2*Math.PI);
             ctx.beginPath();
             ctx.fillStyle = 'rgba(0,0,255,' + colorScale(v.y) + ')';
             // Calculate a bar height, which will be the 1 - dx from the histogram's bin
