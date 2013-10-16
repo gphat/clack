@@ -200,10 +200,10 @@ CLACK.Chart = function(parent, width, height, axes) {
 
     // Create the scales if they don't exist.
     if(ctx.domainScale === undefined) {
-      ctx.domainScale = this.makeScale(ctx.domainScaleType);
+      ctx.domainScale = CLACK.makeScale(ctx.domainScaleType);
       ctx.domainScale.rangeRound([0, this.width]);
     
-      ctx.rangeScale = this.makeScale(ctx.rangeScaleType);;
+      ctx.rangeScale = CLACK.makeScale(ctx.rangeScaleType);;
       ctx.rangeScale.rangeRound([this.height, 0]);
     }
 
@@ -224,26 +224,6 @@ CLACK.Chart = function(parent, width, height, axes) {
     // Finally, set the comain for each scale.
     ctx.domainScale.domain([ctx.xmin, ctx.xmax]);
     ctx.rangeScale.domain([ctx.ymin, ctx.ymax]);
-  }
-
-  // Convencience function for creating a scale based
-  // on a string name.
-  this.makeScale = function(type) {
-    if(type === 'log') {
-      return d3.scale.log();
-    } else if(type === 'quantile') {
-      return d3.scale.quantize();
-    } else if(type === 'quantize') {
-      return d3.scale.quantize();
-    } else if(type === 'sqrt') {
-      return d3.scale.pow();
-    } else if(type === 'threshold') {
-      return d3.scale.threshold();
-    } else if(type === 'time') {
-      return d3.time.scale();
-    } else {
-      return d3.scale.linear();
-    }
   }
 
   // Draw the chart. Erases everything first.
@@ -348,6 +328,27 @@ CLACK.Chart = function(parent, width, height, axes) {
   }
 }
 
+// Convencience function for creating a scale based
+// on a string name.
+CLACK.makeScale = function(type) {
+  if(type === 'log') {
+    return d3.scale.log();
+  } else if(type === 'quantile') {
+    return d3.scale.quantize();
+  } else if(type === 'quantize') {
+    return d3.scale.quantize();
+  } else if(type === 'sqrt') {
+    return d3.scale.pow();
+  } else if(type === 'threshold') {
+    return d3.scale.threshold();
+  } else if(type === 'time') {
+    return d3.time.scale();
+  } else {
+    return d3.scale.linear();
+  }
+}
+
+
 // A Line Renderer!
 CLACK.LineRenderer = function() {
 
@@ -429,7 +430,21 @@ CLACK.ScatterPlotRenderer = function() {
 }
 
 // A Histogram HeatMap Renderer
-CLACK.HistogramHeatMapRenderer = function() {
+CLACK.HistogramHeatMapRenderer = function(options) {
+  options = options || {};
+
+  // Allow the user to specify a way to convert a color value into an actual holor. The
+  // default is to just return the color's value but other implementations might return
+  // 'rgba(0, 0, 255, $color)' to adjust the alpha channel.  The result of this is passed
+  // to the canvas context's `fillStyle` property.
+  options['colorFunction'] = options['colorScaleStart'] || function(color) { return color; }
+  // Color scale start value.
+  options['colorScaleStart'] = options['colorScaleStart'] || 'blue';
+  // Color scale end value.
+  options['colorScaleEnd'] = options['colorScaleEnd'] || 'red';
+  // Scale of color. Uses CLACK.makeScale
+  options['colorScale'] = options['colorScale'] || 'log';
+
   this.draw = function(chart) {
 
     // Note that we're drawing on the in-memory canvas.
@@ -469,7 +484,7 @@ CLACK.HistogramHeatMapRenderer = function() {
 
       // Create a color range that spans from 0 to the number of Y values in our histogram.
       // XXX Configurable color, linear versus log scale, inversion, etc
-      var colorScale = d3.scale.log().domain([ 1, c.maxLength ]).range([ 0, 2 ]);
+      var colorScale = CLACK.makeScale(options['colorScale']).domain([ 1, c.maxLength ]).range([ options['colorScaleStart'], options['colorScaleEnd'] ]);
 
       // For each bin…
       var colIndex = 0;
@@ -483,7 +498,7 @@ CLACK.HistogramHeatMapRenderer = function() {
           // Only draw a square if we have a value. Don't waste time on empty spots.
           if(v.y > 0) {
             ctx.beginPath();
-            ctx.fillStyle = 'rgba(0,0,255,' + colorScale(v.y) + ')';
+            ctx.fillStyle = options['colorFunction'](colorScale(v.y));
             // Calculate a bar height, which will be the 1 - dx from the histogram's bin
             // times the height of the whole chart.
             ctx.fillRect(
