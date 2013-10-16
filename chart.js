@@ -429,7 +429,9 @@ CLACK.ScatterPlotRenderer = function() {
   }
 }
 
-// A Histogram HeatMap Renderer
+// A Histogram HeatMap Renderer.
+// Many time series merged into one visualization. Each x "column" is a histogram of Y values, shown as a heatmap.
+// Note that this ignores the color set on the series!
 CLACK.HistogramHeatMapRenderer = function(options) {
   options = options || {};
 
