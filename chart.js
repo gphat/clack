@@ -353,6 +353,11 @@ CLACK.makeScale = function(type) {
 CLACK.LineRenderer = function(options) {
   options = options || {};
 
+  // Whether or not to show dots.
+  options['dots'] = options['dots'] || false;
+  // Size of the aboe dots (if true)
+  options['dotSize'] = options['dotSize'] || 2;
+
   this.draw = function(chart) {
 
     // Note that we're drawing on the in-memory canvas.
@@ -375,6 +380,18 @@ CLACK.LineRenderer = function(options) {
           ctx.lineTo(c.domainScale(c.series[j].x[k]), c.rangeScale(c.series[j].y[k]));
         }
         ctx.stroke();
+
+        if(options['dots']) {
+          ctx.beginPath();
+          ctx.fillStyle = c.series[j].color;
+          for(var k = 0; k < c.series[j].x.length; k++) {
+            var myX = c.domainScale(c.series[j].x[k]);
+            var myY = c.rangeScale(c.series[j].y[k]);
+            ctx.moveTo(myX, myY);
+            ctx.arc(myX, myY, options['dotSize'], 0, 2 * Math.PI, true);
+          }
+          ctx.fill();
+        }
 
         // If line point is desired.
         // ctx.beginPath();
@@ -401,6 +418,9 @@ CLACK.LineRenderer = function(options) {
 CLACK.ScatterPlotRenderer = function(options) {
   options = options || {};
 
+  // Size of the dots!
+  options['dotSize'] = options['dotSize'] || 2
+
   this.draw = function(chart) {
 
     // Note that we're drawing on the in-memory canvas.
@@ -417,10 +437,9 @@ CLACK.ScatterPlotRenderer = function(options) {
         ctx.beginPath();
         // Set color
         ctx.fillStyle = c.series[j].color;
-        ctx.lineWidth = 1;
 
         for(var k = 0; k < c.series[j].x.length; k++) {
-          ctx.arc(c.domainScale(c.series[j].x[k]), c.rangeScale(c.series[j].y[k]), 2, 0, 2*Math.PI);
+          ctx.arc(c.domainScale(c.series[j].x[k]), c.rangeScale(c.series[j].y[k]), options['dotSize'], 0, 2*Math.PI);
         }
         ctx.fill();
       }
