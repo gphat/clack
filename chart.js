@@ -350,7 +350,7 @@ CLACK.makeScale = function(type) {
 
 
 // A Line Renderer!
-CLACK.LineRenderer = function(options = options || {};) {
+CLACK.LineRenderer = function(options) {
   options = options || {};
 
   this.draw = function(chart) {
