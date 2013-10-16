@@ -350,7 +350,8 @@ CLACK.makeScale = function(type) {
 
 
 // A Line Renderer!
-CLACK.LineRenderer = function() {
+CLACK.LineRenderer = function(options = options || {};) {
+  options = options || {};
 
   this.draw = function(chart) {
 
@@ -397,7 +398,9 @@ CLACK.LineRenderer = function() {
 }
 
 // A Scatter Plot Renderer
-CLACK.ScatterPlotRenderer = function() {
+CLACK.ScatterPlotRenderer = function(options) {
+  options = options || {};
+
   this.draw = function(chart) {
 
     // Note that we're drawing on the in-memory canvas.
