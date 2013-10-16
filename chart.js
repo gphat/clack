@@ -475,7 +475,6 @@ CLACK.HistogramHeatMapRenderer = function(options) {
       var layout = d3.layout.histogram()
         // Set the number of bins to the range of our entire context's Y.
         .bins(binCount);
-      // console.log("Bins: " + c.yrange + 1);
       layout.range([ c.ymin, c.ymax ]);
 
       var bheight = chart.height / binCount;
@@ -483,7 +482,6 @@ CLACK.HistogramHeatMapRenderer = function(options) {
       var bwidth = chart.width / Object.keys(exes).length;
 
       // Create a color range that spans from 0 to the number of Y values in our histogram.
-      // XXX Configurable color, linear versus log scale, inversion, etc
       var colorScale = CLACK.makeScale(options['colorScale']).domain([ 1, c.maxLength ]).range([ options['colorScaleStart'], options['colorScaleEnd'] ]);
 
       // For each bin…
@@ -507,13 +505,6 @@ CLACK.HistogramHeatMapRenderer = function(options) {
               bwidth, // bar's width (evenly spaced based on the number of columns)
               bheight // And the height!
             );
-            // ctx.strokeStyle = 'rgba(0,0,0,.2)';
-            // ctx.strokeRect(
-            //   0 + (colIndex * bwidth),              // x is the offset from 0
-            //   chart.height - ((bin + 1) * bheight),
-            //   bwidth, // bar's width (evenly spaced based on the number of columns)
-            //   bheight // And the height!
-            // );
           }
         }
         colIndex++;
