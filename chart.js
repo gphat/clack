@@ -8,42 +8,55 @@
 
 var CLACK = CLACK || {};
 
+CLACK.Context = function() {
+  return {    
+    domainAxis: undefined,
+    domainScale: undefined,
+    domainScaleType: 'linear',
+    maxLength: undefined,
+    minLength: undefined,
+    rangeAxis: undefined,
+    rangeScale: undefined,
+    rangeScaleType: 'linear',
+    series: [],
+    xmax: -Infinity,
+    xmin: Infinity,
+    xrange: 0,
+    ymax: -Infinity,
+    ymin: Infinity,
+    yrange: 0,
+    markers: []
+  }
+}
+
+// Make this an object…
 CLACK.Chart = function(parent, width, height, axes) {
-  this.contexts = {
-    default: {    
-      this: {},
-      domainAxis: undefined,
-      domainScale: undefined,
-      domainScaleType: 'linear',
-      maxLength: undefined,
-      minLength: undefined,
-      rangeAxis: undefined,
-      rangeScale: undefined,
-      rangeScaleType: 'linear',
-      series: [],
-      xmax: -Infinity,
-      xmin: Infinity,
-      xrange: 0,
-      ymax: -Infinity,
-      ymin: Infinity,
-      yrange: 0,
-      markers: []
-    }
-  };
-  this.parent = parent;
+
+  // Clear the contents of the chart, destroying urthang.
+  this.clear = function() {
+    this.d3shit = undefined;
+    $(this.inner).find("svg").remove();
+    this.contexts = {
+      default: new CLACK.Context()
+    };
+  }
+
+  // Init some variables
   this.axes = axes;
+  this.parent = parent;
+
+  // Start things off clean.
+  this.clear();
 
   // Some error checking on this is needed. XXX
   this.width = width;
   this.height = height;
 
-  // Some control on the grid? XXX
-  this.d3shit = d3.select(parent)
-    .append("svg")
-    .attr("class", "chart")
-    .attr("width", this.width + 40)
-    .attr("height", this.height + 20)
-    .append("g");
+  this.inner = document.createElement('div');
+  this.inner.className = 'clack-inner';
+  this.inner.style.width = this.width + 'px';
+  this.inner.style.height = this.height + 'px';
+  parent.appendChild(this.inner);
 
   // Add the chart canvas
   this.element = document.createElement('canvas');
@@ -54,7 +67,7 @@ CLACK.Chart = function(parent, width, height, axes) {
   this.element.width = this.width;
   this.element.height = this.height;
   this.element.style.zIndex = 0;
-  parent.appendChild(this.element);
+  this.inner.appendChild(this.element);
   this.ctx = this.element.getContext('2d');
 
   // Add the topmost "decoration" canvas
@@ -66,7 +79,7 @@ CLACK.Chart = function(parent, width, height, axes) {
   this.decoElement.width = this.width;
   this.decoElement.height = this.height;
   this.decoElement.style.zIndex = 1;
-  parent.appendChild(this.decoElement);
+  this.inner.appendChild(this.decoElement);
   this.decoCtx = this.decoElement.getContext('2d');
 
   // Create an in-memory canvas!
@@ -108,7 +121,6 @@ CLACK.Chart = function(parent, width, height, axes) {
   }
 
   this.addToSeries = function(ctxName, index, exes, whys, replace) {
-
     var ctx = this.contexts[ctxName];
 
     series = ctx.series[index];
@@ -140,8 +152,6 @@ CLACK.Chart = function(parent, width, height, axes) {
 
     series.xrange = series.xmax - series.xmin;
     series.yrange = series.ymax - series.ymin;
-
-    //ctx.series[index] = series;
 
     this.updateContext(ctxName);
   }
@@ -235,7 +245,31 @@ CLACK.Chart = function(parent, width, height, axes) {
     if(this.axes) {
       var defCtx = this.contexts['default'];
 
+      if(defCtx.series.length < 1) {
+        // Clear, just in case there was something there and it all got removed.
+        this.ctx.clearRect(0, 0, this.width, this.height);
+        return;
+      }
+
       if(defCtx.domainAxis === undefined) {
+        defCtx.domainAxis = d3.svg.axis().scale(defCtx.domainScale).orient('bottom').ticks(5);
+        defCtx.rangeAxis = d3.svg.axis().scale(defCtx.rangeScale).orient('left').ticks(5);
+      } else {
+        // If the axes already exist transition them so they can be updated
+        // if they have changed.
+        this.gx.transition().call(defCtx.domainAxis);
+        this.gy.transition().call(defCtx.rangeAxis);
+      }
+
+      // Some control on the grid? XXX
+      if(this.d3shit === undefined) {
+        this.d3shit = d3.select(this.inner)
+          .append("svg")
+          .attr("class", "chart")
+          .attr("width", this.width + 40)
+          .attr("height", this.height + 20)
+          .append("g");
+
         // This isn't axes, it's ticks! XXX
         this.d3shit.selectAll("line.x")
           .data(defCtx.domainScale.ticks(5))
@@ -260,8 +294,6 @@ CLACK.Chart = function(parent, width, height, axes) {
           .attr("transform", "translate(40, 0)")
           .style("stroke", "#ccc");
 
-        defCtx.domainAxis = d3.svg.axis().scale(defCtx.domainScale).orient('bottom').ticks(5);
-        defCtx.rangeAxis = d3.svg.axis().scale(defCtx.rangeScale).orient('left').ticks(5);
         this.gx = this.d3shit.append('g')
           .attr("class", "axis")
           .attr("transform", "translate(40,200)")
@@ -271,16 +303,26 @@ CLACK.Chart = function(parent, width, height, axes) {
           .attr("class", "axis")
           .attr("transform", "translate(40,0)")
           .call(defCtx.rangeAxis);
-      } else {
-        // If the axes already exist transition them so they can be updated
-        // if they have changed.
-        this.gx.transition().call(defCtx.domainAxis);
-        this.gy.transition().call(defCtx.rangeAxis);
       }
+    } else {
+      // Nix the svg, if we have one!
+      // XXX Must we use jquery here?
+      this.d3shit = undefined;
+      $(this.inner).find("svg").remove();
     }
 
-    this.renderer.draw(this);
+    // Clear the in-memory context for the renderer.
+    this.memCtx.clearRect(0, 0, this.width, this.height);
+    // Begin a new path, just in case
+    this.memCtx.beginPath();
 
+    this.renderer.draw(this, this.memCtx);
+
+    // Clear the current in-browser context.
+    this.ctx.clearRect(0, 0, this.width, this.height);
+    // Copy the contents on the in-memory canvas into the displayed one.
+    this.ctx.drawImage(this.memElement, 0, 0);
+    
     // console.timeEnd('draw');
   }
 
@@ -358,12 +400,7 @@ CLACK.LineRenderer = function(options) {
   // Size of the aboe dots (if true)
   options['dotSize'] = options['dotSize'] || 2;
 
-  this.draw = function(chart) {
-
-    // Note that we're drawing on the in-memory canvas.
-    var ctx = chart.memCtx;
-    ctx.clearRect(0, 0, chart.width, chart.height);
-
+  this.draw = function(chart, ctx) {
     // Iterate over each context
     for(var ctxName in chart.contexts) {
       var c = chart.contexts[ctxName];
@@ -392,25 +429,8 @@ CLACK.LineRenderer = function(options) {
           }
           ctx.fill();
         }
-
-        // If line point is desired.
-        // ctx.beginPath();
-        // _.each(_.zip(s.x, s.y), function(p) {
-        //     ctx.fillStyle = s.color;
-        //     // Rounded to avoid sub-pixel rendering which isn't really useful
-        //     ctx.moveTo(
-        //       Math.round(c.domainScale(p[0])),
-        //       Math.round(c.rangeScale(p[1]))
-        //     );
-        //     ctx.arc(c.domainScale(p[0]), c.rangeScale(p[1]), 2, 0, 2 * Math.PI, true);
-        // });
-        // ctx.fill();
       }
     }
-
-    // Copy the contents on the in-memory canvas into the displayed one.
-    chart.ctx.clearRect(0, 0, this.width, this.height);
-    chart.ctx.drawImage(chart.memElement, 0, 0);
   } 
 }
 
@@ -421,11 +441,7 @@ CLACK.ScatterPlotRenderer = function(options) {
   // Size of the dots!
   options['dotSize'] = options['dotSize'] || 2
 
-  this.draw = function(chart) {
-
-    // Note that we're drawing on the in-memory canvas.
-    var ctx = chart.memCtx;
-    ctx.clearRect(0, 0, chart.width, chart.height);
+  this.draw = function(chart, ctx) {
 
     // Iterate over each context
     for(var ctxName in chart.contexts) {
@@ -444,10 +460,6 @@ CLACK.ScatterPlotRenderer = function(options) {
         ctx.fill();
       }
     }
-
-    // Copy the contents on the in-memory canvas into the displayed one.
-    chart.ctx.clearRect(0, 0, this.width, this.height);
-    chart.ctx.drawImage(chart.memElement, 0, 0);
   }
 }
 
@@ -469,11 +481,7 @@ CLACK.HistogramHeatMapRenderer = function(options) {
   // Scale of color. Uses CLACK.makeScale
   options['colorScale'] = options['colorScale'] || 'log';
 
-  this.draw = function(chart) {
-
-    // Note that we're drawing on the in-memory canvas.
-    var ctx = chart.memCtx;
-    ctx.clearRect(0, 0, chart.width, chart.height);
+  this.draw = function(chart, ctx) {
 
     // Iterate over each context
     for(var ctxName in chart.contexts) {
@@ -533,10 +541,6 @@ CLACK.HistogramHeatMapRenderer = function(options) {
         }
         colIndex++;
       }
-    }
-    
-    // Copy the contents on the in-memory canvas into the displayed one.
-    chart.ctx.clearRect(0, 0, this.width, this.height);
-    chart.ctx.drawImage(chart.memElement, 0, 0);
+    }    
   }
 }
