@@ -30,6 +30,7 @@ CLACK.Context = function() {
 
 // Make this an object…
 CLACK.Chart = function(parent, options) {
+  // XXX Make sure this is an object and give reasonable error messages.
   this.options = options || {};
 
   this.options['axes'] = this.options['axes'] || true;
@@ -312,14 +313,14 @@ CLACK.Chart = function(parent, options) {
     }
 
     // Clear the in-memory context for the renderer.
-    this.memCtx.clearRect(0, 0, this.options.width, this.height);
+    this.memCtx.clearRect(0, 0, this.options.width, this.options.height);
     // Begin a new path, just in case
     this.memCtx.beginPath();
 
     this.renderer.draw(this, this.memCtx);
 
     // Clear the current in-browser context.
-    this.ctx.clearRect(0, 0, this.options.width, this.height);
+    this.ctx.clearRect(0, 0, this.options.width, this.options.height);
     // Copy the contents on the in-memory canvas into the displayed one.
     this.ctx.drawImage(this.memElement, 0, 0);
     
@@ -503,15 +504,15 @@ CLACK.HistogramHeatMapRenderer = function(options) {
 
       // Create a new histogram and set it's range to the min/max for
       // the entire set of series.
-      var binCount = Math.round(chart.height / 5)
+      var binCount = Math.round(chart.options.height / 5)
       var layout = d3.layout.histogram()
         // Set the number of bins to the range of our entire context's Y.
         .bins(binCount);
       layout.range([ c.ymin, c.ymax ]);
 
-      var bheight = chart.height / binCount;
+      var bheight = chart.options.height / binCount;
       // The width for each bin
-      var bwidth = chart.width / Object.keys(exes).length;
+      var bwidth = chart.options.width / Object.keys(exes).length;
 
       // Create a color range that spans from 0 to the number of Y values in our histogram.
       var colorScale = CLACK.makeScale(options['colorScale']).domain([ 1, c.maxLength ]).range([ options['colorScaleStart'], options['colorScaleEnd'] ]);
@@ -533,7 +534,7 @@ CLACK.HistogramHeatMapRenderer = function(options) {
             // times the height of the whole chart.
             ctx.fillRect(
               0 + (colIndex * bwidth),              // x is the offset from 0
-              chart.height - ((bin + 1) * bheight),
+              chart.options.height - ((bin + 1) * bheight),
               bwidth, // bar's width (evenly spaced based on the number of columns)
               bheight // And the height!
             );
