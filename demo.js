@@ -21,7 +21,7 @@ function DemoViewModel() {
   self.message = ko.observable();
   self.points = 30;
   self.renderer = ko.observable("LineRenderer");
-  self.renderers = ko.observableArray(["LineRenderer", "ScatterPlotRenderer", "HistogramHeatMapRenderer"]);
+  self.renderers = ko.observableArray(["LineRenderer", "ScatterPlotRenderer", "HistogramHeatMapRenderer", "InstantRenderer"]);
   self.seriesCount = ko.observable(0);
   self.series = ko.observableArray([]);
 
@@ -53,6 +53,7 @@ function DemoViewModel() {
         whys.push((j + 1) * Math.sin(2 * Math.PI * j + i + currentDate.getSeconds()));
       }
       self.clack.addSeries({
+        name: 'Series ' + j,
         x: exes,
         y: whys,
         label: s.name(),

@@ -466,6 +466,7 @@ CLACK.ScatterPlotRenderer = function(options) {
   }
 }
 
+// Doesn't know how to deal with added series. :(
 CLACK.InstantRenderer = function(options) {
   options = options || {};
 
@@ -481,45 +482,45 @@ CLACK.InstantRenderer = function(options) {
       var c = chart.contexts[ctxName];
 
       if(this.demSeriesDivs === undefined) {
-      this.demSeriesDivs = d3.select(chart.inner).selectAll("div")
-        // XXX Need a key for efficient updates here, series name or a UUID or something?
-        .data(c.series)
-        .enter().append('div')
-        .style('display', 'inline-block')
-        .style('margin', '3px')
-        .style('padding', '3px')
-        .style('border', '1px solid #efefef');
+        this.demSeriesDivs = d3.select(chart.inner).selectAll("div")
+          // XXX Need a key for efficient updates here, series name or a UUID or something?
+          .data(c.series)
+          .enter().append('div')
+          .style('display', 'inline-block')
+          .style('margin', '3px')
+          .style('padding', '3px')
+          .style('border', '1px solid #efefef');
 
-      // Name
-      this.demSeriesDivs.append('p').text(function(s) { return s.name; })
-        .style('font-size', '1em')
-        .style('font-weight', 'bold')
-        .style('text-align', 'center')
-        .style('border-bottom', '1px solid #ccc')
-        .style('padding', '.05em');
-      // Min
-      this.demSeriesDivs.append('p').text(function(s) { return options.formatter(s.ymin); })
-        .style('text-align', 'center')
-        .attr('data-min', 'true');
-      // Current
+        // Name
+        this.demSeriesDivs.append('p').text(function(s) { return s.name; })
+          .style('font-size', '1em')
+          .style('font-weight', 'bold')
+          .style('text-align', 'center')
+          .style('border-bottom', '1px solid #ccc')
+          .style('padding', '.05em');
+        // Min
+        this.demSeriesDivs.append('p').text(function(s) { return options.formatter(s.ymin); })
+          .style('text-align', 'center')
+          .attr('data-min', 'true');
+        // Current
 
-      this.demSeriesDivs.append('div')
-        .text(function(s) { return options.formatter(s.y[s.y.length - 1]); })
-        .style('border-bottom', '1px solid #ccc')
-        .style('border-top', '1px solid #ccc')
-        .style('font-size', '2em')
-        .style('font-weight', 'bold')
-        .style('padding', '.25em')
-        .style('text-align', 'center')
-        .attr('data-current', 'true');
+        this.demSeriesDivs.append('div')
+          .text(function(s) { return options.formatter(s.y[s.y.length - 1]); })
+          .style('border-bottom', '1px solid #ccc')
+          .style('border-top', '1px solid #ccc')
+          .style('font-size', '2em')
+          .style('font-weight', 'bold')
+          .style('padding', '.25em')
+          .style('text-align', 'center')
+          .attr('data-current', 'true');
 
-      // Max
-      this.demSeriesDivs.append('p').text(function(s) { return options.formatter(s.ymax); })
-        .style('font-size', '1em')
-        .style('font-weight', 'bold')
-        .style('text-align', 'center')
-        .style('padding', '.05em')
-        .attr('data-max', 'true');
+        // Max
+        this.demSeriesDivs.append('p').text(function(s) { return options.formatter(s.ymax); })
+          .style('font-size', '1em')
+          .style('font-weight', 'bold')
+          .style('text-align', 'center')
+          .style('padding', '.05em')
+          .attr('data-max', 'true');
       } else {
         this.demSeriesDivs.data(c.series).selectAll("div[data-min=true]")
           .text(function(s) { return options.formatter(s.ymin); });
