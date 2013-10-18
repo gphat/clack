@@ -1,7 +1,6 @@
 // Problems
 // Assumes the data is sorted.
 // context name defaults to default everywhere
-// No way to set line widths
 
 // Ideas
 // Is this applicable: http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
@@ -399,6 +398,7 @@ CLACK.LineRenderer = function(options) {
   options['dots'] = options['dots'] || false;
   // Size of the aboe dots (if true)
   options['dotSize'] = options['dotSize'] || 2;
+  options['lineWidth'] = options['lineWidth'] || 1;
 
   this.draw = function(chart, ctx) {
     // Iterate over each context
@@ -411,7 +411,7 @@ CLACK.LineRenderer = function(options) {
         ctx.beginPath();
         // Set color
         ctx.strokeStyle = c.series[j].color;
-        ctx.lineWidth = 1;
+        ctx.lineWidth = options['lineWidth'];
 
         for(var k = 0; k < c.series[j].x.length; k++) {
           ctx.lineTo(c.domainScale(c.series[j].x[k]), c.rangeScale(c.series[j].y[k]));
