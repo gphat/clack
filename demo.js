@@ -12,7 +12,7 @@ function DemoViewModel() {
   var self = this;
 
   self.clack = new CLACK.Chart(
-    document.getElementById('chartContainer'), 500, 200, true
+    document.getElementById('chartContainer'), { width: 500, height: 200 }
   );
   self.clack.renderer = new CLACK.LineRenderer();
 
@@ -26,7 +26,7 @@ function DemoViewModel() {
   self.series = ko.observableArray([]);
 
   self.axes.subscribe(function(a) {
-    self.clack.axes = a;
+    self.clack.options.axes = a;
     self.refresh();
   }); 
 
