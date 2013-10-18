@@ -29,10 +29,16 @@ CLACK.Context = function() {
 }
 
 // Make this an object…
-CLACK.Chart = function(parent, width, height, axes) {
+CLACK.Chart = function(parent, options) {
+  this.options = options || {};
+
+  this.options['axes'] = this.options['axes'] || true;
+  this.options['width'] = this.options['width'] || 500;
+  this.options['height'] = this.options['height'] || 200;
 
   // Clear the contents of the chart, destroying urthang.
   this.clear = function() {
+    // This D3 handling seems hinky.
     this.d3shit = undefined;
     $(this.inner).find("svg").remove();
     this.contexts = {
@@ -41,20 +47,15 @@ CLACK.Chart = function(parent, width, height, axes) {
   }
 
   // Init some variables
-  this.axes = axes;
   this.parent = parent;
 
   // Start things off clean.
   this.clear();
 
-  // Some error checking on this is needed. XXX
-  this.width = width;
-  this.height = height;
-
   this.inner = document.createElement('div');
   this.inner.className = 'clack-inner';
-  this.inner.style.width = this.width + 'px';
-  this.inner.style.height = this.height + 'px';
+  this.inner.style.width = this.options.width + 'px';
+  this.inner.style.height = this.options.height + 'px';
   parent.appendChild(this.inner);
 
   // Add the chart canvas
@@ -63,8 +64,8 @@ CLACK.Chart = function(parent, width, height, axes) {
   // Only if the axes are here… XXX
   this.element.style.left = "40px";
   this.element.style.top = 0;
-  this.element.width = this.width;
-  this.element.height = this.height;
+  this.element.width = this.options.width;
+  this.element.height = this.options.height;
   this.element.style.zIndex = 0;
   this.inner.appendChild(this.element);
   this.ctx = this.element.getContext('2d');
@@ -75,16 +76,16 @@ CLACK.Chart = function(parent, width, height, axes) {
   // Only if the axes are here… XXX
   this.decoElement.style.left = "40px";
   this.decoElement.style.top = 0;
-  this.decoElement.width = this.width;
-  this.decoElement.height = this.height;
+  this.decoElement.width = this.options.width;
+  this.decoElement.height = this.options.height;
   this.decoElement.style.zIndex = 1;
   this.inner.appendChild(this.decoElement);
   this.decoCtx = this.decoElement.getContext('2d');
 
   // Create an in-memory canvas!
   this.memElement = document.createElement('canvas');
-  this.memElement.width = this.width;
-  this.memElement.height = this.height;
+  this.memElement.width = this.options.width;
+  this.memElement.height = this.options.height;
   this.memCtx = this.memElement.getContext('2d');
 
   // The default.
@@ -210,10 +211,10 @@ CLACK.Chart = function(parent, width, height, axes) {
     // Create the scales if they don't exist.
     if(ctx.domainScale === undefined) {
       ctx.domainScale = CLACK.makeScale(ctx.domainScaleType);
-      ctx.domainScale.rangeRound([0, this.width]);
+      ctx.domainScale.rangeRound([0, this.options.width]);
     
       ctx.rangeScale = CLACK.makeScale(ctx.rangeScaleType);;
-      ctx.rangeScale.rangeRound([this.height, 0]);
+      ctx.rangeScale.rangeRound([this.options.height, 0]);
     }
 
     // Some help for log scales, which can't have a 0!
@@ -241,12 +242,12 @@ CLACK.Chart = function(parent, width, height, axes) {
 
     // Handle the axes in the common draw method before calling the renderer.
     // Only create the axes if they don't already exist.
-    if(this.axes) {
+    if(this.options.axes) {
       var defCtx = this.contexts['default'];
 
       if(defCtx.series.length < 1) {
         // Clear, just in case there was something there and it all got removed.
-        this.ctx.clearRect(0, 0, this.width, this.height);
+        this.ctx.clearRect(0, 0, this.options.width, this.options.height);
         return;
       }
 
@@ -265,8 +266,8 @@ CLACK.Chart = function(parent, width, height, axes) {
         this.d3shit = d3.select(this.inner)
           .append("svg")
           .attr("class", "chart")
-          .attr("width", this.width + 40)
-          .attr("height", this.height + 20)
+          .attr("width", this.options.width + 40) // These modifiers need to go, they don't work XXX
+          .attr("height", this.options.height + 20)
           .append("g");
 
         // This isn't axes, it's ticks! XXX
@@ -277,7 +278,7 @@ CLACK.Chart = function(parent, width, height, axes) {
           .attr("x1", defCtx.domainScale)
           .attr("x2", defCtx.domainScale)
           .attr("y1", 0)
-          .attr("y2", this.height)
+          .attr("y2", this.options.height)
           .attr("transform", "translate(40, 0)")
           .style("stroke", "#ccc");
 
@@ -287,7 +288,7 @@ CLACK.Chart = function(parent, width, height, axes) {
           .enter().append("line")
           .attr("class", "y")
           .attr("x1", 0)
-          .attr("x2", this.width)
+          .attr("x2", this.options.width)
           .attr("y1", defCtx.rangeScale)
           .attr("y2", defCtx.rangeScale)
           .attr("transform", "translate(40, 0)")
@@ -295,7 +296,7 @@ CLACK.Chart = function(parent, width, height, axes) {
 
         this.gx = this.d3shit.append('g')
           .attr("class", "axis")
-          .attr("transform", "translate(40,200)")
+          .attr("transform", "translate(40," + this.options.height + ")")
           .call(defCtx.domainAxis);
          
         this.gy = this.d3shit.append('g')
@@ -311,14 +312,14 @@ CLACK.Chart = function(parent, width, height, axes) {
     }
 
     // Clear the in-memory context for the renderer.
-    this.memCtx.clearRect(0, 0, this.width, this.height);
+    this.memCtx.clearRect(0, 0, this.options.width, this.height);
     // Begin a new path, just in case
     this.memCtx.beginPath();
 
     this.renderer.draw(this, this.memCtx);
 
     // Clear the current in-browser context.
-    this.ctx.clearRect(0, 0, this.width, this.height);
+    this.ctx.clearRect(0, 0, this.options.width, this.height);
     // Copy the contents on the in-memory canvas into the displayed one.
     this.ctx.drawImage(this.memElement, 0, 0);
     
@@ -328,10 +329,9 @@ CLACK.Chart = function(parent, width, height, axes) {
   this.drawDecorations = function() {
     var self = this;
     var ctx = self.memCtx;
-    ctx.clearRect(0, 0, self.width, self.height);
+    ctx.clearRect(0, 0, self.options.width, self.options.height);
     for(var ctxName in self.contexts) {
       var c = self.contexts[ctxName];
-
       if(c.markers.length > 0) {
         // Iterate over any markers
         for(var i = 0; i < c.markers.length; i++) {
@@ -345,7 +345,7 @@ CLACK.Chart = function(parent, width, height, axes) {
               ctx.strokeStyle = m.color;
               ctx.lineWidth = 1;
               ctx.moveTo(m.x1, 0);
-              ctx.lineTo(m.x1, self.height);
+              ctx.lineTo(m.x1, self.options.height);
               ctx.stroke();
             }
           } else if(m.y1 !== undefined) {
@@ -357,14 +357,14 @@ CLACK.Chart = function(parent, width, height, axes) {
               ctx.strokeStyle = m.color;
               ctx.lineWidth = 3;
               ctx.moveTo(0, m.y1);
-              ctx.lineTo(self.width, m.y1);
+              ctx.lineTo(self.options.width, m.y1);
               ctx.stroke();
             }
           }
         }
       }
     }
-    this.decoCtx.clearRect(0, 0, this.width, this.height);
+    this.decoCtx.clearRect(0, 0, this.options.width, this.options.height);
     this.decoCtx.drawImage(this.memElement, 0, 0);
   }
 }
