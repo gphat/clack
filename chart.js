@@ -33,7 +33,9 @@ CLACK.Chart = function(parent, options) {
   // XXX Make sure this is an object and give reasonable error messages.
   this.options = options || {};
 
-  this.options['axes'] = this.options['axes'] || true;
+  if(this.options['axes'] === undefined) {
+    this.options['axes'] = true;
+  }
   this.options['width'] = this.options['width'] || 500;
   this.options['height'] = this.options['height'] || 200;
 
@@ -459,6 +461,74 @@ CLACK.ScatterPlotRenderer = function(options) {
           ctx.arc(c.domainScale(c.series[j].x[k]), c.rangeScale(c.series[j].y[k]), options['dotSize'], 0, 2*Math.PI);
         }
         ctx.fill();
+      }
+    }
+  }
+}
+
+CLACK.InstantRenderer = function(options) {
+  options = options || {};
+
+  options['formatter'] = options['formatter'] || d3.format(".2f");
+
+  this.domSeriesDivs = undefined;
+
+  this.draw = function(chart, ctx) {
+
+    // Iterate over each context
+    for(var ctxName in chart.contexts) {
+      // Not sure what to do with multiple contexts here yet…
+      var c = chart.contexts[ctxName];
+
+      if(this.demSeriesDivs === undefined) {
+      this.demSeriesDivs = d3.select(chart.inner).selectAll("div")
+        // XXX Need a key for efficient updates here, series name or a UUID or something?
+        .data(c.series)
+        .enter().append('div')
+        .style('display', 'inline-block')
+        .style('margin', '3px')
+        .style('padding', '3px')
+        .style('border', '1px solid #efefef');
+
+      // Name
+      this.demSeriesDivs.append('p').text(function(s) { return s.name; })
+        .style('font-size', '1em')
+        .style('font-weight', 'bold')
+        .style('text-align', 'center')
+        .style('border-bottom', '1px solid #ccc')
+        .style('padding', '.05em');
+      // Min
+      this.demSeriesDivs.append('p').text(function(s) { return options.formatter(s.ymin); })
+        .style('text-align', 'center')
+        .attr('data-min', 'true');
+      // Current
+
+      this.demSeriesDivs.append('div')
+        .text(function(s) { return options.formatter(s.y[s.y.length - 1]); })
+        .style('border-bottom', '1px solid #ccc')
+        .style('border-top', '1px solid #ccc')
+        .style('font-size', '2em')
+        .style('font-weight', 'bold')
+        .style('padding', '.25em')
+        .style('text-align', 'center')
+        .attr('data-current', 'true');
+
+      // Max
+      this.demSeriesDivs.append('p').text(function(s) { return options.formatter(s.ymax); })
+        .style('font-size', '1em')
+        .style('font-weight', 'bold')
+        .style('text-align', 'center')
+        .style('padding', '.05em')
+        .attr('data-max', 'true');
+      } else {
+        this.demSeriesDivs.data(c.series).selectAll("div[data-min=true]")
+          .text(function(s) { return options.formatter(s.ymin); });
+
+        this.demSeriesDivs.data(c.series).selectAll("div[data-current=true]")
+          .text(function(s) { return options.formatter(s.y[s.y.length - 1]); });
+
+        this.demSeriesDivs.data(c.series).selectAll("div[data-max=true]")
+          .text(function(s) { return options.formatter(s.ymax); });
       }
     }
   }
