@@ -10,9 +10,10 @@ layout: default
 $(document).ready(function() {
 
   var c = new CLACK.Chart(
-    document.getElementById('chartContainer')
+    document.getElementById('chartContainer'), {
+      grids: true
+    }
   );
-  c.renderer = new CLACK.LineRenderer();
 
   var tracker = {
     x1: undefined,
