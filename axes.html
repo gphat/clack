@@ -109,7 +109,7 @@
       c.draw();
       c.drawDecorations();
 
-      var x = points;
+      var x = points + 1;
       var addAPoint = function() {
         for(var j = 0; j <= series; j++) {
           var y = Math.floor(Math.random() * 50);
@@ -120,9 +120,9 @@
           // console.timeEnd('redraw');
           x += 1;
         }
-        setTimeout(addAPoint,500);
+        setTimeout(addAPoint,1000);
       }
-      setTimeout(addAPoint,500);
+      // setTimeout(addAPoint,1000);
     });
     </script>
   </body>

@@ -61,38 +61,60 @@ CLACK.Chart = function(parent, options) {
   this.inner.style.height = this.options.height + 'px';
   parent.appendChild(this.inner);
 
-  // Add the chart canvas
-  this.element = document.createElement('canvas');
-  this.element.style.position = 'absolute';
-  // Only if the axes are here… XXX
-  this.element.style.left = "40px";
-  this.element.style.top = 0;
-  this.element.width = this.options.width;
-  this.element.height = this.options.height;
-  this.element.style.zIndex = 0;
-  this.inner.appendChild(this.element);
-  this.ctx = this.element.getContext('2d');
-
-  // Add the topmost "decoration" canvas
-  this.decoElement = document.createElement('canvas');
-  this.decoElement.style.position = 'absolute';
-  // Only if the axes are here… XXX
-  this.decoElement.style.left = "40px";
-  this.decoElement.style.top = 0;
-  this.decoElement.width = this.options.width;
-  this.decoElement.height = this.options.height;
-  this.decoElement.style.zIndex = 1;
-  this.inner.appendChild(this.decoElement);
-  this.decoCtx = this.decoElement.getContext('2d');
-
-  // Create an in-memory canvas!
-  this.memElement = document.createElement('canvas');
-  this.memElement.width = this.options.width;
-  this.memElement.height = this.options.height;
-  this.memCtx = this.memElement.getContext('2d');
-
   // The default.
   this.renderer = new CLACK.LineRenderer();
+
+  this.getCanvas = function() {
+    // Add the chart canvas
+    if(this._ctx === undefined) {
+      this.element = document.createElement('canvas');
+      this.element.style.position = 'absolute';
+      // Only if the axes are here… XXX
+      this.element.style.left = "40px";
+      this.element.style.top = 0;
+      this.element.width = this.options.width;
+      this.element.height = this.options.height;
+      this.element.style.zIndex = 0;
+      this.inner.appendChild(this.element);
+      this._ctx = this.element.getContext('2d');
+    }
+    return this._ctx;
+  }
+
+  this.getDecorationCanvas = function() {
+    // Add the topmost "decoration" canvas
+    if(this._decoCtx === undefined) {
+      this.decoElement = document.createElement('canvas');
+      this.decoElement.style.position = 'absolute';
+      // Only if the axes are here… XXX
+      this.decoElement.style.left = "40px";
+      this.decoElement.style.top = 0;
+      this.decoElement.width = this.options.width;
+      this.decoElement.height = this.options.height;
+      this.decoElement.style.zIndex = 1;
+      this.inner.appendChild(this.decoElement);
+      this._decoCtx = this.decoElement.getContext('2d');
+    }
+    return this._decoCtx;
+  }
+
+  this.getMemoryCanvas = function() {
+    if(this._memCtx === undefined) {
+      // Create an in-memory canvas!
+      var memElement = this.getMemoryElement();
+      this._memCtx = memElement.getContext('2d');
+    }
+    return this._memCtx;
+  }
+
+  this.getMemoryElement = function() {
+    if(this._memElement === undefined) {
+      this._memElement = document.createElement('canvas');
+      this._memElement.width = this.options.width;
+      this._memElement.height = this.options.height;
+    }
+    return this._memElement;
+  }
 
   this.getContext = function(name) {
     return this.contexts[name];
@@ -248,12 +270,6 @@ CLACK.Chart = function(parent, options) {
     if(this.options.axes) {
       var defCtx = this.contexts['default'];
 
-      if(defCtx.series.length < 1) {
-        // Clear, just in case there was something there and it all got removed.
-        this.ctx.clearRect(0, 0, this.options.width, this.options.height);
-        return;
-      }
-
       if(defCtx.domainAxis === undefined) {
         defCtx.domainAxis = d3.svg.axis().scale(defCtx.domainScale).orient('bottom').ticks(5);
         defCtx.rangeAxis = d3.svg.axis().scale(defCtx.rangeScale).orient('left').ticks(5);
@@ -314,25 +330,20 @@ CLACK.Chart = function(parent, options) {
       $(this.inner).find("svg").remove();
     }
 
-    // Clear the in-memory context for the renderer.
-    this.memCtx.clearRect(0, 0, this.options.width, this.options.height);
-    // Begin a new path, just in case
-    this.memCtx.beginPath();
-
     this.renderer.draw(this, this.memCtx);
-
-    // Clear the current in-browser context.
-    this.ctx.clearRect(0, 0, this.options.width, this.options.height);
-    // Copy the contents on the in-memory canvas into the displayed one.
-    this.ctx.drawImage(this.memElement, 0, 0);
     
     // console.timeEnd('draw');
   }
 
   this.drawDecorations = function() {
     var self = this;
-    var ctx = self.memCtx;
-    ctx.clearRect(0, 0, self.options.width, self.options.height);
+
+    var ctx = this.getMemoryCanvas();
+    // Clear the in-memory context for the renderer.
+    ctx.clearRect(0, 0, this.options.width, this.options.height);
+    // Begin a new path, just in case
+    ctx.beginPath();
+
     for(var ctxName in self.contexts) {
       var c = self.contexts[ctxName];
       if(c.markers.length > 0) {
@@ -367,8 +378,12 @@ CLACK.Chart = function(parent, options) {
         }
       }
     }
-    this.decoCtx.clearRect(0, 0, this.options.width, this.options.height);
-    this.decoCtx.drawImage(this.memElement, 0, 0);
+
+    var fctx = this.getDecorationCanvas();
+    // Clear the current in-browser context.
+    fctx.clearRect(0, 0, this.options.width, this.options.height);
+    // Copy the contents on the in-memory canvas into the displayed one.
+    fctx.drawImage(this.getMemoryElement(), 0, 0);
   }
 }
 
@@ -404,6 +419,12 @@ CLACK.LineRenderer = function(options) {
   options['lineWidth'] = options['lineWidth'] || 1;
 
   this.draw = function(chart, ctx) {
+    var ctx = chart.getMemoryCanvas();
+    // Clear the in-memory context for the renderer.
+    ctx.clearRect(0, 0, chart.options.width, chart.options.height);
+    // Begin a new path, just in case
+    ctx.beginPath();
+
     // Iterate over each context
     for(var ctxName in chart.contexts) {
       var c = chart.contexts[ctxName];
@@ -434,6 +455,12 @@ CLACK.LineRenderer = function(options) {
         }
       }
     }
+
+    var fctx = chart.getCanvas();
+    // Clear the current in-browser context.
+    fctx.clearRect(0, 0, chart.options.width, chart.options.height);
+    // Copy the contents on the in-memory canvas into the displayed one.
+    fctx.drawImage(chart.getMemoryElement(), 0, 0);
   } 
 }
 
@@ -445,6 +472,11 @@ CLACK.ScatterPlotRenderer = function(options) {
   options['dotSize'] = options['dotSize'] || 2
 
   this.draw = function(chart, ctx) {
+    var ctx = chart.getMemoryCanvas();
+    // Clear the in-memory context for the renderer.
+    ctx.clearRect(0, 0, chart.options.width, chart.options.height);
+    // Begin a new path, just in case
+    ctx.beginPath();
 
     // Iterate over each context
     for(var ctxName in chart.contexts) {
@@ -463,6 +495,12 @@ CLACK.ScatterPlotRenderer = function(options) {
         ctx.fill();
       }
     }
+
+    var fctx = chart.getCanvas();
+    // Clear the current in-browser context.
+    fctx.clearRect(0, 0, chart.options.width, chart.options.height);
+    // Copy the contents on the in-memory canvas into the displayed one.
+    fctx.drawImage(chart.getMemoryElement(), 0, 0);
   }
 }
 
@@ -553,6 +591,11 @@ CLACK.HistogramHeatMapRenderer = function(options) {
   options['colorScale'] = options['colorScale'] || 'log';
 
   this.draw = function(chart, ctx) {
+    var ctx = chart.getMemoryCanvas();
+    // Clear the in-memory context for the renderer.
+    ctx.clearRect(0, 0, chart.options.width, chart.options.height);
+    // Begin a new path, just in case
+    ctx.beginPath();
 
     // Iterate over each context
     for(var ctxName in chart.contexts) {
@@ -612,6 +655,12 @@ CLACK.HistogramHeatMapRenderer = function(options) {
         }
         colIndex++;
       }
-    }    
+    }
+
+    var fctx = chart.getCanvas();
+    // Clear the current in-browser context.
+    fctx.clearRect(0, 0, chart.options.width, chart.options.height);
+    // Copy the contents on the in-memory canvas into the displayed one.
+    fctx.drawImage(chart.getMemoryElement(), 0, 0);    
   }
 }
