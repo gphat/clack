@@ -280,8 +280,12 @@ CLACK.Chart = function(parent, options) {
       } else {
         // If the axes already exist transition them so they can be updated
         // if they have changed.
-        this.gx.transition().call(defCtx.domainAxis);
-        this.gy.transition().call(defCtx.rangeAxis);
+        this.ax.transition().call(defCtx.domainAxis);
+        this.ay.transition().call(defCtx.rangeAxis);
+
+        // remove the ticks. Can't get them to move right so be lazy and re-add them
+        this.d3shit.selectAll("line.x").remove();
+        this.d3shit.selectAll("line.y").remove();
       }
 
       // Some control on the grid? XXX
@@ -293,40 +297,43 @@ CLACK.Chart = function(parent, options) {
           .attr("height", this.options.height + 20)
           .append("g");
 
-        // This isn't axes, it's ticks! XXX
-        this.d3shit.selectAll("line.x")
-          .data(defCtx.domainScale.ticks(5))
-          .enter().append("line")
-          .attr("class", "x")
-          .attr("x1", defCtx.domainScale)
-          .attr("x2", defCtx.domainScale)
-          .attr("y1", 0)
-          .attr("y2", this.options.height)
-          .attr("transform", "translate(40, 0)")
-          .style("stroke", "#ccc");
-
-        // This isn't axes, it's ticks! XXX
-        this.d3shit.selectAll("line.y")
-          .data(defCtx.rangeScale.ticks(5))
-          .enter().append("line")
-          .attr("class", "y")
-          .attr("x1", 0)
-          .attr("x2", this.options.width)
-          .attr("y1", defCtx.rangeScale)
-          .attr("y2", defCtx.rangeScale)
-          .attr("transform", "translate(40, 0)")
-          .style("stroke", "#ccc");
-
-        this.gx = this.d3shit.append('g')
+        this.ax = this.d3shit.append('g')
           .attr("class", "axis")
           .attr("transform", "translate(40," + this.options.height + ")")
           .call(defCtx.domainAxis);
          
-        this.gy = this.d3shit.append('g')
+        this.ay = this.d3shit.append('g')
           .attr("class", "axis")
           .attr("transform", "translate(40,0)")
           .call(defCtx.rangeAxis);
+
       }
+
+      // Draw the grids. Done regardless because re-draws remove them.
+      // This isn't axes, it's grids! XXX
+      this.d3shit.selectAll("line.x")
+        .data(defCtx.domainScale.ticks(5))
+        .enter().append("line")
+        .attr("class", "x")
+        .attr("x1", defCtx.domainScale)
+        .attr("x2", defCtx.domainScale)
+        .attr("y1", 0)
+        .attr("y2", this.options.height)
+        .attr("transform", "translate(40, 0)")
+        .style("stroke", "#ccc");
+
+      // This isn't axes, it's ticks! XXX
+      this.d3shit.selectAll("line.y")
+        .data(defCtx.rangeScale.ticks(5))
+        .enter().append("line")
+        .attr("class", "y")
+        .attr("x1", 0)
+        .attr("x2", this.options.width)
+        .attr("y1", defCtx.rangeScale)
+        .attr("y2", defCtx.rangeScale)
+        .attr("transform", "translate(40, 0)")
+        .style("stroke", "#ccc");
+
     } else {
       // Nix the svg, if we have one!
       // XXX Must we use jquery here?
