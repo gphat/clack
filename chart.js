@@ -39,6 +39,7 @@ CLACK.Chart = function(parent, options) {
   if(this.options['grids'] === undefined) {
     this.options['grids'] = true;
   }
+  this.options['gridColor'] = this.options['gridColor'] || '#ccc';
 
   this.options['width'] = this.options['width'] || 500;
   this.options['height'] = this.options['height'] || 200;
@@ -287,14 +288,14 @@ CLACK.Chart = function(parent, options) {
         this.ax.transition().call(defCtx.domainAxis);
         this.ay.transition().call(defCtx.rangeAxis);
 
-        if(self.options.grids === true) {
+        if(this.options.grids === true) {
           // remove the ticks. Can't get them to move right so be lazy and re-add them
           this.d3shit.selectAll("line.x").remove();
           this.d3shit.selectAll("line.y").remove();
         }
       }
 
-      // Some control on the grid? XXX
+      // Draw the background grid.
       if(this.d3shit === undefined) {
         this.d3shit = d3.select(this.inner)
           .append("svg")
@@ -325,7 +326,7 @@ CLACK.Chart = function(parent, options) {
           .attr("y1", 0)
           .attr("y2", this.options.height)
           .attr("transform", "translate(40, 0)")
-          .style("stroke", "#ccc");
+          .style("stroke", this.options.gridColor);
 
         // This isn't axes, it's ticks! XXX
         this.d3shit.selectAll("line.y")
@@ -337,7 +338,7 @@ CLACK.Chart = function(parent, options) {
           .attr("y1", defCtx.rangeScale)
           .attr("y2", defCtx.rangeScale)
           .attr("transform", "translate(40, 0)")
-          .style("stroke", "#ccc");
+          .style("stroke", this.options.gridColor);
       }
 
     } else {
