@@ -231,10 +231,7 @@ CLACK.Chart = function(parent, options) {
     // Create the scales if they don't exist.
     if(ctx.domainScale === undefined) {
       ctx.domainScale = CLACK.makeScale(ctx.domainScaleType);
-      ctx.domainScale.rangeRound([0, this.options.width]);
-    
       ctx.rangeScale = CLACK.makeScale(ctx.rangeScaleType);
-      ctx.rangeScale.rangeRound([this.options.height, 0]);
     }
 
     // Some help for log scales, which can't have a 0!
@@ -260,19 +257,30 @@ CLACK.Chart = function(parent, options) {
   this.draw = function() {
     // console.time('draw');
 
+    this.options.renderer.draw(this.inner, this);
+    
+    // console.timeEnd('draw');
+  };
+
+  this.drawAxes = function(parent, context, margins) {
+
+    margins = margins || {};
+    margins.left = margins.left || 40;
+    margins.right = margins.right || 0;
+    margins.bottom = margins.bottom || 40;
+    margins.top = margins.top || 0;
+
     // Handle the axes in the common draw method before calling the renderer.
     // Only create the axes if they don't already exist.
     if(this.options.axes) {
-      var defCtx = this.contexts['default'];
-
-      if(defCtx.domainAxis === undefined) {
-        defCtx.domainAxis = d3.svg.axis().scale(defCtx.domainScale).orient('bottom').ticks(5);
-        defCtx.rangeAxis = d3.svg.axis().scale(defCtx.rangeScale).orient('left').ticks(5);
+      if(context.domainAxis === undefined) {
+        context.domainAxis = d3.svg.axis().scale(context.domainScale).orient('bottom').tickSize(1);
+        context.rangeAxis = d3.svg.axis().scale(context.rangeScale).orient('left').tickSize(1);
       } else {
         // If the axes already exist transition them so they can be updated
         // if they have changed.
-        this.ax.transition().call(defCtx.domainAxis);
-        this.ay.transition().call(defCtx.rangeAxis);
+        this.ax.transition().call(context.domainAxis);
+        this.ay.transition().call(context.rangeAxis);
 
         if(this.options.grids === true) {
           // remove the ticks. Can't get them to move right so be lazy and re-add them
@@ -283,47 +291,46 @@ CLACK.Chart = function(parent, options) {
 
       // Draw the background grid.
       if(this.d3shit === undefined) {
-        this.d3shit = d3.select(this.inner)
+        this.d3shit = d3.select(parent)
           .append("svg")
           .attr("class", "chart")
-          .attr("width", this.options.width + 40) // These modifiers need to go, they don't work XXX
-          .attr("height", this.options.height + 20)
+          .attr("width", parent.width)
+          .attr("height", parent.height)
           .append("g");
 
         this.ax = this.d3shit.append('g')
-          .attr("class", "axis")
-          .attr("transform", "translate(40," + this.options.height + ")")
-          .call(defCtx.domainAxis);
+          .attr("class", "xaxis")
+          .attr("transform", "translate(" + margins.left + "," + (parent.height - margins.bottom) + ")")
+          .call(context.domainAxis);
          
         this.ay = this.d3shit.append('g')
-          .attr("class", "axis")
-          .attr("transform", "translate(40,0)")
-          .call(defCtx.rangeAxis);
+          .attr("class", "yaxis")
+          .attr("transform", "translate(" + margins.left + ",0)")
+          .call(context.rangeAxis);
       }
 
       if(this.options.grids) {
         // Draw the grids. Done regardless because re-draws remove them.
         this.d3shit.selectAll("line.x")
-          .data(defCtx.domainScale.ticks(5))
+          .data(context.domainScale.ticks(5))
           .enter().append("line")
           .attr("class", "x")
-          .attr("x1", defCtx.domainScale)
-          .attr("x2", defCtx.domainScale)
+          .attr("x1", context.domainScale)
+          .attr("x2", context.domainScale)
           .attr("y1", 0)
-          .attr("y2", this.options.height)
-          .attr("transform", "translate(40, 0)")
+          .attr("y2", this.options.height - margins.bottom - margins.top)
+          .attr("transform", "translate(" + margins.left + ", 0)")
           .style("stroke", this.options.gridColor);
 
-        // This isn't axes, it's ticks! XXX
         this.d3shit.selectAll("line.y")
-          .data(defCtx.rangeScale.ticks(5))
+          .data(context.rangeScale.ticks(5))
           .enter().append("line")
           .attr("class", "y")
           .attr("x1", 0)
-          .attr("x2", this.options.width)
-          .attr("y1", defCtx.rangeScale)
-          .attr("y2", defCtx.rangeScale)
-          .attr("transform", "translate(40, 0)")
+          .attr("x2", this.options.width - margins.left - margins.right)
+          .attr("y1", context.rangeScale)
+          .attr("y2", context.rangeScale)
+          .attr("transform", "translate(" + margins.left + " , 0)")
           .style("stroke", this.options.gridColor);
       }
 
@@ -333,11 +340,7 @@ CLACK.Chart = function(parent, options) {
       this.d3shit = undefined;
       $(this.inner).find("svg").remove();
     }
-
-    this.options.renderer.draw(this.inner, this);
-    
-    // console.timeEnd('draw');
-  };
+  }
 
   this.drawDecorations = function() {
     var self = this;
@@ -429,20 +432,35 @@ CLACK.LineRenderer = function(options) {
   };
 
   this.draw = function(parent, chart) {
+    // Make these options!
+    var marginLeft = 40;
+    var marginBottom = 20;
+    var marginTop = 0;
+    var marginRight = 0;
 
     // Create our canvas element if we haven't already.
     if(this.element === undefined) {
       this.element = document.createElement('canvas');
       this.element.style.position = 'absolute';
       // Only if the axes are here… XXX
-      this.element.style.left = 0;
-      this.element.style.top = 0;
-      this.element.width = parent.width;
-      this.element.height = parent.height;
+      this.element.style.left = marginLeft + "px";
+      this.element.style.top = marginTop + "px";
+      this.element.width = parent.width - marginLeft - marginRight;
+      this.element.height = parent.height - marginTop - marginBottom;
       // this.element.style.zIndex = 0;
       parent.appendChild(this.element);
       this.ctx = this.element.getContext('2d');
     }
+
+    // XXX Only the default!!
+    var defCtx = chart.getContext('default');
+    defCtx.domainScale.rangeRound([0, parent.width - marginLeft - marginRight]);
+    defCtx.rangeScale.rangeRound([parent.height - marginBottom - marginTop, 0]);
+
+    chart.drawAxes(parent, defCtx, {
+      left: marginLeft,
+      bottom: marginBottom,
+    });
 
     var ctx = chart.getMemoryCanvas();
     // Clear the in-memory context for the renderer.
@@ -501,19 +519,34 @@ CLACK.ScatterPlotRenderer = function(options) {
   };
 
   this.draw = function(parent, chart) {
+    // Make these options!
+    var marginLeft = 40;
+    var marginBottom = 20;
+    var marginTop = 0;
+    var marginRight = 0;
+
     // Create our canvas element if we haven't already.
     if(this.element === undefined) {
       this.element = document.createElement('canvas');
       this.element.style.position = 'absolute';
       // Only if the axes are here… XXX
-      this.element.style.left = 0;
-      this.element.style.top = 0;
-      this.element.width = parent.width;
-      this.element.height = parent.height;
+      this.element.style.left = marginLeft + "px";
+      this.element.style.top = marginTop + "px";
+      this.element.width = parent.width - marginLeft - marginRight;
+      this.element.height = parent.height - marginTop - marginBottom;
       // this.element.style.zIndex = 0;
       parent.appendChild(this.element);
       this.ctx = this.element.getContext('2d');
     }
+
+    var defCtx = chart.getContext('default');
+    defCtx.domainScale.rangeRound([0, parent.width - marginLeft - marginRight]);
+    defCtx.rangeScale.rangeRound([parent.height - marginBottom - marginTop, 0]);
+
+    chart.drawAxes(parent, defCtx, {
+      left: marginLeft,
+      bottom: marginBottom,
+    });
 
     var ctx = chart.getMemoryCanvas();
     // Clear the in-memory context for the renderer.
@@ -664,19 +697,32 @@ CLACK.HistogramHeatMapRenderer = function(options) {
   };
 
   this.draw = function(parent, chart) {
+    // Make these options!
+    var marginLeft = 40;
+    var marginBottom = 20;
+    var marginTop = 0;
+    var marginRight = 0;
+
     // Create our canvas element if we haven't already.
     if(this.element === undefined) {
       this.element = document.createElement('canvas');
       this.element.style.position = 'absolute';
-      // Only if the axes are here… XXX
-      this.element.style.left = 0;
-      this.element.style.top = 0;
-      this.element.width = parent.width;
-      this.element.height = parent.height;
-      // this.element.style.zIndex = 0;
+      this.element.style.left = marginLeft + "px";
+      this.element.style.top = marginTop + "px";
+      this.element.width = parent.width - marginLeft - marginRight;
+      this.element.height = parent.height - marginBottom - marginTop;
       parent.appendChild(this.element);
       this.ctx = this.element.getContext('2d');
     }
+
+    var defCtx = chart.getContext('default');
+    defCtx.domainScale.rangeRound([0, parent.width - marginLeft - marginRight]);
+    defCtx.rangeScale.rangeRound([parent.height - marginBottom - marginTop, 0]);
+
+    chart.drawAxes(parent, defCtx, {
+      left: marginLeft,
+      bottom: marginBottom,
+    });
 
     var ctx = chart.getMemoryCanvas();
     // Clear the in-memory context for the renderer.
