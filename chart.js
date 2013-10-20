@@ -26,26 +26,26 @@ CLACK.Context = function() {
     ymin: Infinity,
     yrange: 0,
     markers: []
-  }
-}
+  };
+};
 
 // Make this an object…
 CLACK.Chart = function(parent, options) {
   // XXX Make sure this is an object and give reasonable error messages.
   this.options = options || {};
 
-  if(this.options['axes'] === undefined) {
-    this.options['axes'] = true;
+  if(this.options.axes === undefined) {
+    this.options.axes = true;
   }
-  if(this.options['grids'] === undefined) {
-    this.options['grids'] = true;
+  if(this.options.grids === undefined) {
+    this.options.grids = true;
   }
-  this.options['gridColor'] = this.options['gridColor'] || '#ccc';
+  this.options.gridColor = this.options.gridColor || '#ccc';
 
-  this.options['width'] = this.options['width'] || 500;
-  this.options['height'] = this.options['height'] || 200;
+  this.options.width = this.options.width || 500;
+  this.options.height = this.options.height || 200;
 
-  this.options['renderer'] = this.options['renderer'] || new CLACK.LineRenderer();
+  this.options.renderer = this.options.renderer || new CLACK.LineRenderer();
 
   // Clear the contents of the chart, destroying urthang.
   this.clear = function() {
@@ -60,7 +60,7 @@ CLACK.Chart = function(parent, options) {
     this.contexts = {
       default: new CLACK.Context()
     };
-  }
+  };
 
   // Init some variables
   this.parent = parent;
@@ -89,7 +89,7 @@ CLACK.Chart = function(parent, options) {
       this._ctx = this.element.getContext('2d');
     }
     return this._ctx;
-  }
+  };
 
   this.getDecorationCanvas = function() {
     // Add the topmost "decoration" canvas
@@ -106,7 +106,7 @@ CLACK.Chart = function(parent, options) {
       this._decoCtx = this.decoElement.getContext('2d');
     }
     return this._decoCtx;
-  }
+  };
 
   this.getMemoryCanvas = function() {
     if(this._memCtx === undefined) {
@@ -115,7 +115,7 @@ CLACK.Chart = function(parent, options) {
       this._memCtx = memElement.getContext('2d');
     }
     return this._memCtx;
-  }
+  };
 
   this.getMemoryElement = function() {
     if(this._memElement === undefined) {
@@ -124,11 +124,11 @@ CLACK.Chart = function(parent, options) {
       this._memElement.height = this.options.height;
     }
     return this._memElement;
-  }
+  };
 
   this.getContext = function(name) {
     return this.contexts[name];
-  }
+  };
 
   this.addMarker = function(marker) {
     var ctx = this.contexts['default'];
@@ -137,7 +137,7 @@ CLACK.Chart = function(parent, options) {
 
     this.updateContext('default');
     return ctx.markers.length;
-  }
+  };
 
   this.addSeries = function(series) {
     var ctx = this.contexts['default'];
@@ -153,7 +153,7 @@ CLACK.Chart = function(parent, options) {
     var idx = ctx.series.length - 1;
     this.updateSeries('default', idx, series.x, series.y);
     return idx;
-  }
+  };
 
   this.addToSeries = function(ctxName, index, exes, whys, replace) {
     var ctx = this.contexts[ctxName];
@@ -171,7 +171,7 @@ CLACK.Chart = function(parent, options) {
     }
 
     this.updateSeries(ctxName, index, exes, whys);
-  }
+  };
 
   // Update stats for the series.
   this.updateSeries = function(ctxName, index) {
@@ -180,7 +180,7 @@ CLACK.Chart = function(parent, options) {
     series = ctx.series[index];
 
     series.xmax = d3.max(series.x);
-    series.xmin = d3.min(series.x)
+    series.xmin = d3.min(series.x);
 
     series.ymax = d3.max(series.y);
     series.ymin = d3.min(series.y);
@@ -189,7 +189,7 @@ CLACK.Chart = function(parent, options) {
     series.yrange = series.ymax - series.ymin;
 
     this.updateContext(ctxName);
-  }
+  };
 
   // Update stats for the context.
   this.updateContext = function(ctxName) {
@@ -216,8 +216,8 @@ CLACK.Chart = function(parent, options) {
     }
 
     // Do the same for any markers.
-    for(var i = 0; i < ctx.markers.length; i++) {
-      var m = ctx.markers[i];
+    for(var j = 0; j < ctx.markers.length; j++) {
+      var m = ctx.markers[j];
       if(m.x1 !== undefined) {
         xmin = Math.min(xmin, m.x1);
       }
@@ -248,7 +248,7 @@ CLACK.Chart = function(parent, options) {
       ctx.domainScale = CLACK.makeScale(ctx.domainScaleType);
       ctx.domainScale.rangeRound([0, this.options.width]);
     
-      ctx.rangeScale = CLACK.makeScale(ctx.rangeScaleType);;
+      ctx.rangeScale = CLACK.makeScale(ctx.rangeScaleType);
       ctx.rangeScale.rangeRound([this.options.height, 0]);
     }
 
@@ -269,7 +269,7 @@ CLACK.Chart = function(parent, options) {
     // Finally, set the comain for each scale.
     ctx.domainScale.domain([ctx.xmin, ctx.xmax]);
     ctx.rangeScale.domain([ctx.ymin, ctx.ymax]);
-  }
+  };
 
   // Draw the chart. Erases everything first.
   this.draw = function() {
@@ -352,7 +352,7 @@ CLACK.Chart = function(parent, options) {
     this.options.renderer.draw(this, this.memCtx);
     
     // console.timeEnd('draw');
-  }
+  };
 
   this.drawDecorations = function() {
     var self = this;
@@ -403,8 +403,8 @@ CLACK.Chart = function(parent, options) {
     fctx.clearRect(0, 0, this.options.width, this.options.height);
     // Copy the contents on the in-memory canvas into the displayed one.
     fctx.drawImage(this.getMemoryElement(), 0, 0);
-  }
-}
+  };
+};
 
 // Convencience function for creating a scale based
 // on a string name.
@@ -424,7 +424,7 @@ CLACK.makeScale = function(type) {
   } else {
     return d3.scale.linear();
   }
-}
+};
 
 
 // A Line Renderer!
@@ -432,12 +432,12 @@ CLACK.LineRenderer = function(options) {
   options = options || {};
 
   // Whether or not to show dots.
-  options['dots'] = options['dots'] || false;
+  options.dots = options.dots || false;
   // Size of the aboe dots (if true)
-  options['dotSize'] = options['dotSize'] || 2;
-  options['lineWidth'] = options['lineWidth'] || 1;
+  options.dotSize = options.dotSize || 2;
+  options.lineWidth = options.lineWidth || 1;
 
-  this.draw = function(chart, ctx) {
+  this.draw = function(chart) {
     var ctx = chart.getMemoryCanvas();
     // Clear the in-memory context for the renderer.
     ctx.clearRect(0, 0, chart.options.width, chart.options.height);
@@ -452,21 +452,21 @@ CLACK.LineRenderer = function(options) {
         ctx.beginPath();
         // Set color
         ctx.strokeStyle = c.series[j].color;
-        ctx.lineWidth = options['lineWidth'];
+        ctx.lineWidth = options.lineWidth;
 
         for(var k = 0; k < c.series[j].x.length; k++) {
           ctx.lineTo(c.domainScale(c.series[j].x[k]), c.rangeScale(c.series[j].y[k]));
         }
         ctx.stroke();
 
-        if(options['dots']) {
+        if(options.dots) {
           ctx.beginPath();
           ctx.fillStyle = c.series[j].color;
-          for(var k = 0; k < c.series[j].x.length; k++) {
-            var myX = c.domainScale(c.series[j].x[k]);
-            var myY = c.rangeScale(c.series[j].y[k]);
+          for(var l = 0; l < c.series[j].x.length; k++) {
+            var myX = c.domainScale(c.series[j].x[l]);
+            var myY = c.rangeScale(c.series[j].y[l]);
             ctx.moveTo(myX, myY);
-            ctx.arc(myX, myY, options['dotSize'], 0, 2 * Math.PI, true);
+            ctx.arc(myX, myY, options.dotSize, 0, 2 * Math.PI, true);
           }
           ctx.fill();
         }
@@ -478,17 +478,17 @@ CLACK.LineRenderer = function(options) {
     fctx.clearRect(0, 0, chart.options.width, chart.options.height);
     // Copy the contents on the in-memory canvas into the displayed one.
     fctx.drawImage(chart.getMemoryElement(), 0, 0);
-  } 
-}
+  };
+};
 
 // A Scatter Plot Renderer
 CLACK.ScatterPlotRenderer = function(options) {
   options = options || {};
 
   // Size of the dots!
-  options['dotSize'] = options['dotSize'] || 2
+  options.dotSize = options.dotSize || 2;
 
-  this.draw = function(chart, ctx) {
+  this.draw = function(chart) {
     var ctx = chart.getMemoryCanvas();
     // Clear the in-memory context for the renderer.
     ctx.clearRect(0, 0, chart.options.width, chart.options.height);
@@ -505,7 +505,7 @@ CLACK.ScatterPlotRenderer = function(options) {
         ctx.fillStyle = c.series[j].color;
 
         for(var k = 0; k < c.series[j].x.length; k++) {
-          ctx.arc(c.domainScale(c.series[j].x[k]), c.rangeScale(c.series[j].y[k]), options['dotSize'], 0, 2*Math.PI);
+          ctx.arc(c.domainScale(c.series[j].x[k]), c.rangeScale(c.series[j].y[k]), options.dotSize, 0, 2*Math.PI);
         }
         ctx.fill();
       }
@@ -516,18 +516,32 @@ CLACK.ScatterPlotRenderer = function(options) {
     fctx.clearRect(0, 0, chart.options.width, chart.options.height);
     // Copy the contents on the in-memory canvas into the displayed one.
     fctx.drawImage(chart.getMemoryElement(), 0, 0);
-  }
-}
+  };
+};
 
 // Doesn't know how to deal with added series. :(
 CLACK.InstantRenderer = function(options) {
   options = options || {};
 
-  options['formatter'] = options['formatter'] || d3.format(".2f");
+  options.formatter = options.formatter || d3.format(".2f");
 
   this.domSeriesDivs = undefined;
 
   this.draw = function(chart, ctx) {
+
+    // Making these here so that aren't being made inside the loop
+    var nameFetcher = function(s) {
+      return s.name;
+    };
+    var minFormatter = function(s) {
+      return options.formatter(s.ymin);
+    };
+    var maxFormatter = function(s) {
+      return options.formatter(s.ymax);
+    };
+    var currFormatter = function(s) {
+      return options.formatter(s.y[s.y.length - 1]);
+    };
 
     // Iterate over each context
     for(var ctxName in chart.contexts) {
@@ -545,20 +559,20 @@ CLACK.InstantRenderer = function(options) {
           .style('border', '1px solid #efefef');
 
         // Name
-        this.demSeriesDivs.append('p').text(function(s) { return s.name; })
+        this.demSeriesDivs.append('p').text(nameFetcher)
           .style('font-size', '1em')
           .style('font-weight', 'bold')
           .style('text-align', 'center')
           .style('border-bottom', '1px solid #ccc')
           .style('padding', '.05em');
         // Min
-        this.demSeriesDivs.append('p').text(function(s) { return options.formatter(s.ymin); })
+        this.demSeriesDivs.append('p').text(minFormatter)
           .style('text-align', 'center')
           .attr('data-min', 'true');
         // Current
 
         this.demSeriesDivs.append('div')
-          .text(function(s) { return options.formatter(s.y[s.y.length - 1]); })
+          .text(currFormatter)
           .style('border-bottom', '1px solid #ccc')
           .style('border-top', '1px solid #ccc')
           .style('font-size', '2em')
@@ -568,7 +582,7 @@ CLACK.InstantRenderer = function(options) {
           .attr('data-current', 'true');
 
         // Max
-        this.demSeriesDivs.append('p').text(function(s) { return options.formatter(s.ymax); })
+        this.demSeriesDivs.append('p').text(maxFormatter)
           .style('font-size', '1em')
           .style('font-weight', 'bold')
           .style('text-align', 'center')
@@ -576,17 +590,17 @@ CLACK.InstantRenderer = function(options) {
           .attr('data-max', 'true');
       } else {
         this.demSeriesDivs.data(c.series).selectAll("div[data-min=true]")
-          .text(function(s) { return options.formatter(s.ymin); });
+          .text(minFormatter);
 
         this.demSeriesDivs.data(c.series).selectAll("div[data-current=true]")
-          .text(function(s) { return options.formatter(s.y[s.y.length - 1]); });
+          .text(currFormatter);
 
         this.demSeriesDivs.data(c.series).selectAll("div[data-max=true]")
-          .text(function(s) { return options.formatter(s.ymax); });
+          .text(maxFormatter);
       }
     }
-  }
-}
+  };
+};
 
 // A Histogram HeatMap Renderer.
 // Many time series merged into one visualization. Each x "column" is a histogram of Y values, shown as a heatmap.
@@ -598,15 +612,15 @@ CLACK.HistogramHeatMapRenderer = function(options) {
   // default is to just return the color's value but other implementations might return
   // 'rgba(0, 0, 255, $color)' to adjust the alpha channel.  The result of this is passed
   // to the canvas context's `fillStyle` property.
-  options['colorFunction'] = options['colorScaleStart'] || function(color) { return color; }
+  options.colorFunction = options.colorScaleStart || function(color) { return color; };
   // Color scale start value.
-  options['colorScaleStart'] = options['colorScaleStart'] || 'blue';
+  options.colorScaleStart = options.colorScaleStart || 'blue';
   // Color scale end value.
-  options['colorScaleEnd'] = options['colorScaleEnd'] || 'red';
+  options.colorScaleEnd = options.colorScaleEnd || 'red';
   // Scale of color. Uses CLACK.makeScale
-  options['colorScale'] = options['colorScale'] || 'log';
+  options.colorScale = options.colorScale || 'log';
 
-  this.draw = function(chart, ctx) {
+  this.draw = function(chart) {
     var ctx = chart.getMemoryCanvas();
     // Clear the in-memory context for the renderer.
     ctx.clearRect(0, 0, chart.options.width, chart.options.height);
@@ -631,7 +645,7 @@ CLACK.HistogramHeatMapRenderer = function(options) {
 
       // Create a new histogram and set it's range to the min/max for
       // the entire set of series.
-      var binCount = Math.round(chart.options.height / 5)
+      var binCount = Math.round(chart.options.height / 5);
       var layout = d3.layout.histogram()
         // Set the number of bins to the range of our entire context's Y.
         .bins(binCount);
@@ -642,7 +656,7 @@ CLACK.HistogramHeatMapRenderer = function(options) {
       var bwidth = chart.options.width / Object.keys(exes).length;
 
       // Create a color range that spans from 0 to the number of Y values in our histogram.
-      var colorScale = CLACK.makeScale(options['colorScale']).domain([ 1, c.maxLength ]).range([ options['colorScaleStart'], options['colorScaleEnd'] ]);
+      var colorScale = CLACK.makeScale(options.colorScale).domain([ 1, c.maxLength ]).range([ options.colorScaleStart, options.colorScaleEnd ]);
 
       // For each bin…
       var colIndex = 0;
@@ -656,7 +670,7 @@ CLACK.HistogramHeatMapRenderer = function(options) {
           // Only draw a square if we have a value. Don't waste time on empty spots.
           if(v.y > 0) {
             ctx.beginPath();
-            ctx.fillStyle = options['colorFunction'](colorScale(v.y));
+            ctx.fillStyle = options.colorFunction(colorScale(v.y));
             // Calculate a bar height, which will be the 1 - dx from the histogram's bin
             // times the height of the whole chart.
             ctx.fillRect(
@@ -676,5 +690,5 @@ CLACK.HistogramHeatMapRenderer = function(options) {
     fctx.clearRect(0, 0, chart.options.width, chart.options.height);
     // Copy the contents on the in-memory canvas into the displayed one.
     fctx.drawImage(chart.getMemoryElement(), 0, 0);    
-  }
-}
+  };
+};
