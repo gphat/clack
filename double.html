@@ -1,0 +1,76 @@
+---
+layout: default
+---
+
+<p>Two views of the same data, rendered together. Updating one updates both.</p>
+
+<div id="chartContainer" style="display: inline-block; position: relative"></div>
+
+<script>
+$(document).ready(function() {
+
+  var dub = new CLACK.DoubleRenderer({
+    leftRenderer: new CLACK.HistogramHeatMapRenderer(),
+    rightRenderer: new CLACK.InstantRenderer()
+  });
+
+  var c = new CLACK.Chart(
+    document.getElementById('chartContainer'), {
+      width: 500,
+      height: 200,
+      renderer: dub
+    }
+  );
+
+  var tracker = {
+    x1: undefined,
+    x2: undefined,
+    y1: undefined,
+    y2: undefined,
+    color: '#000'
+  }
+
+  var series = 2;
+  var points = 30;
+
+  c.addMarker(tracker);
+
+  var currentDate = new Date();
+  
+  // console.time("generatechart");
+  for(var j = 0; j < series; j++) {
+    var exes = [];
+    var whys = [];
+    for(var i = 0; i <= points; i++) {
+      exes.push(i);
+      whys.push((j + 1) * Math.sin(2 * Math.PI * j + i + currentDate.getSeconds()));
+    }
+    c.addSeries({
+      name: 'Series ' + j,
+      x: exes,
+      y: whys,
+      label: 'foobar ' + j,
+      color: 'hsla(' + Math.random() * 360 + ", 100%, 50%, 1)"
+    });
+  }
+  // console.timeEnd("generatechart");
+
+  c.draw();
+  c.drawDecorations();
+
+  var x = points + 1;
+  var addAPoint = function() {
+    for(var j = 0; j < series; j++) {
+      var y = Math.floor(Math.random() * 50);
+      // console.time('redraw');
+      c.addToSeries('default', j, [x], [(j + 1) * Math.sin(2 * Math.PI * j + x)], true);
+
+      c.draw();
+      // console.timeEnd('redraw');
+      x += 1;
+    }
+    setTimeout(addAPoint,250);
+  }
+  setTimeout(addAPoint,250);
+});
+</script>

@@ -340,7 +340,7 @@ CLACK.Chart = function(parent, options) {
       this.d3shit = undefined;
       $(this.inner).find("svg").remove();
     }
-  }
+  };
 
   this.drawDecorations = function() {
     var self = this;
@@ -414,6 +414,56 @@ CLACK.makeScale = function(type) {
   }
 };
 
+CLACK.DoubleRenderer = function(options) {
+  options = options || {};
+
+  this.clear = function() {
+    if(this.element !== undefined) {
+      ($this.element).remove();
+    }
+  };
+
+  this.draw = function(parent, chart) {
+    // Make these options!
+    var marginLeft = 0;
+    var marginBottom = 0;
+    var marginTop = 0;
+    var marginRight = 0;
+
+    // Create our canvas element if we haven't already.
+    if(this.leftElement === undefined) {
+      this.leftElement = document.createElement('div');
+      // this.element.style.position = 'absolute';
+      // Only if the axes are here… XXX
+      // this.element.style.left = marginLeft + "px";
+      // this.element.style.top = marginTop + "px";
+      this.leftElement.style.display = 'inline-block';
+      this.leftElement.width = (parent.width - marginLeft - marginRight) / 2;
+      this.leftElement.height = parent.height - marginTop - marginBottom;
+      // this.element.style.zIndex = 0;
+      parent.appendChild(this.leftElement);
+      // this.ctx = this.element.getContext('2d');
+    }
+
+    // Create our canvas element if we haven't already.
+    if(this.rightElement === undefined) {
+      this.rightElement = document.createElement('div');
+      // this.element.style.position = 'absolute';
+      // Only if the axes are here… XXX
+      // this.element.style.left = marginLeft + "px";
+      // this.element.style.top = marginTop + "px";
+      this.rightElement.style.display = 'inline-block';
+      this.rightElement.width = (parent.width - marginLeft - marginRight) / 2;
+      this.rightElement.height = parent.height - marginTop - marginBottom;
+      // this.element.style.zIndex = 0;
+      parent.appendChild(this.rightElement);
+      // this.ctx = this.element.getContext('2d');
+    }
+
+    options.leftRenderer.draw(this.leftElement, chart);
+    options.rightRenderer.draw(this.rightElement, chart);
+  };
+};
 
 // A Line Renderer!
 CLACK.LineRenderer = function(options) {
