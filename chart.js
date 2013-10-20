@@ -422,6 +422,12 @@ CLACK.LineRenderer = function(options) {
   options.dotSize = options.dotSize || 2;
   options.lineWidth = options.lineWidth || 1;
 
+  this.clear = function() {
+    if(this.element !== undefined) {
+      ($this.element).remove();
+    }
+  };
+
   this.draw = function(parent, chart) {
 
     // Create our canvas element if we haven't already.
@@ -488,6 +494,12 @@ CLACK.ScatterPlotRenderer = function(options) {
   // Size of the dots!
   options.dotSize = options.dotSize || 2;
 
+  this.clear = function() {
+    if(this.element !== undefined) {
+      ($this.element).remove();
+    }
+  };
+
   this.draw = function(parent, chart) {
     // Create our canvas element if we haven't already.
     if(this.element === undefined) {
@@ -541,7 +553,18 @@ CLACK.InstantRenderer = function(options) {
 
   this.domSeriesDivs = undefined;
 
+  this.clear = function() {
+    if(this.element !== undefined) {
+      ($this.element).remove();
+    }
+  };
+
   this.draw = function(parent, chart) {
+
+     if(this.element === undefined) {
+      this.element = document.createElement('div');
+      parent.appendChild(this.element);
+    }
 
     // Making these here so that aren't being made inside the loop
     var nameFetcher = function(s) {
@@ -563,7 +586,7 @@ CLACK.InstantRenderer = function(options) {
       var c = chart.contexts[ctxName];
 
       if(this.demSeriesDivs === undefined) {
-        this.demSeriesDivs = d3.select(parent).selectAll("div")
+        this.demSeriesDivs = d3.select(this.element).selectAll("div")
           // XXX Need a key for efficient updates here, series name or a UUID or something?
           .data(c.series)
           .enter().append('div')
@@ -633,6 +656,12 @@ CLACK.HistogramHeatMapRenderer = function(options) {
   options.colorScaleEnd = options.colorScaleEnd || 'red';
   // Scale of color. Uses CLACK.makeScale
   options.colorScale = options.colorScale || 'log';
+
+  this.clear = function() {
+    if(this.element !== undefined) {
+      ($this.element).remove();
+    }
+  };
 
   this.draw = function(parent, chart) {
     // Create our canvas element if we haven't already.
