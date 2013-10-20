@@ -71,25 +71,10 @@ CLACK.Chart = function(parent, options) {
   this.inner = document.createElement('div');
   this.inner.className = 'clack-inner';
   this.inner.style.width = this.options.width + 'px';
+  this.inner.width = this.options.width;
   this.inner.style.height = this.options.height + 'px';
+  this.inner.height = this.options.height;
   parent.appendChild(this.inner);
-
-  this.getCanvas = function() {
-    // Add the chart canvas
-    if(this._ctx === undefined) {
-      this.element = document.createElement('canvas');
-      this.element.style.position = 'absolute';
-      // Only if the axes are here… XXX
-      this.element.style.left = "40px";
-      this.element.style.top = 0;
-      this.element.width = this.options.width;
-      this.element.height = this.options.height;
-      this.element.style.zIndex = 0;
-      this.inner.appendChild(this.element);
-      this._ctx = this.element.getContext('2d');
-    }
-    return this._ctx;
-  };
 
   this.getDecorationCanvas = function() {
     // Add the topmost "decoration" canvas
@@ -438,6 +423,21 @@ CLACK.LineRenderer = function(options) {
   options.lineWidth = options.lineWidth || 1;
 
   this.draw = function(parent, chart) {
+
+    // Create our canvas element if we haven't already.
+    if(this.element === undefined) {
+      this.element = document.createElement('canvas');
+      this.element.style.position = 'absolute';
+      // Only if the axes are here… XXX
+      this.element.style.left = 0;
+      this.element.style.top = 0;
+      this.element.width = parent.width;
+      this.element.height = parent.height;
+      // this.element.style.zIndex = 0;
+      parent.appendChild(this.element);
+      this.ctx = this.element.getContext('2d');
+    }
+
     var ctx = chart.getMemoryCanvas();
     // Clear the in-memory context for the renderer.
     ctx.clearRect(0, 0, chart.options.width, chart.options.height);
@@ -473,7 +473,7 @@ CLACK.LineRenderer = function(options) {
       }
     }
 
-    var fctx = chart.getCanvas();
+    var fctx = this.ctx;
     // Clear the current in-browser context.
     fctx.clearRect(0, 0, chart.options.width, chart.options.height);
     // Copy the contents on the in-memory canvas into the displayed one.
@@ -489,6 +489,20 @@ CLACK.ScatterPlotRenderer = function(options) {
   options.dotSize = options.dotSize || 2;
 
   this.draw = function(parent, chart) {
+    // Create our canvas element if we haven't already.
+    if(this.element === undefined) {
+      this.element = document.createElement('canvas');
+      this.element.style.position = 'absolute';
+      // Only if the axes are here… XXX
+      this.element.style.left = 0;
+      this.element.style.top = 0;
+      this.element.width = parent.width;
+      this.element.height = parent.height;
+      // this.element.style.zIndex = 0;
+      parent.appendChild(this.element);
+      this.ctx = this.element.getContext('2d');
+    }
+
     var ctx = chart.getMemoryCanvas();
     // Clear the in-memory context for the renderer.
     ctx.clearRect(0, 0, chart.options.width, chart.options.height);
@@ -511,7 +525,7 @@ CLACK.ScatterPlotRenderer = function(options) {
       }
     }
 
-    var fctx = chart.getCanvas();
+    var fctx = this.ctx;
     // Clear the current in-browser context.
     fctx.clearRect(0, 0, chart.options.width, chart.options.height);
     // Copy the contents on the in-memory canvas into the displayed one.
@@ -621,6 +635,20 @@ CLACK.HistogramHeatMapRenderer = function(options) {
   options.colorScale = options.colorScale || 'log';
 
   this.draw = function(parent, chart) {
+    // Create our canvas element if we haven't already.
+    if(this.element === undefined) {
+      this.element = document.createElement('canvas');
+      this.element.style.position = 'absolute';
+      // Only if the axes are here… XXX
+      this.element.style.left = 0;
+      this.element.style.top = 0;
+      this.element.width = parent.width;
+      this.element.height = parent.height;
+      // this.element.style.zIndex = 0;
+      parent.appendChild(this.element);
+      this.ctx = this.element.getContext('2d');
+    }
+
     var ctx = chart.getMemoryCanvas();
     // Clear the in-memory context for the renderer.
     ctx.clearRect(0, 0, chart.options.width, chart.options.height);
@@ -685,7 +713,7 @@ CLACK.HistogramHeatMapRenderer = function(options) {
       }
     }
 
-    var fctx = chart.getCanvas();
+    var fctx = this.ctx;
     // Clear the current in-browser context.
     fctx.clearRect(0, 0, chart.options.width, chart.options.height);
     // Copy the contents on the in-memory canvas into the displayed one.
