@@ -349,7 +349,7 @@ CLACK.Chart = function(parent, options) {
       $(this.inner).find("svg").remove();
     }
 
-    this.options.renderer.draw(this, this.memCtx);
+    this.options.renderer.draw(this.inner, this);
     
     // console.timeEnd('draw');
   };
@@ -437,7 +437,7 @@ CLACK.LineRenderer = function(options) {
   options.dotSize = options.dotSize || 2;
   options.lineWidth = options.lineWidth || 1;
 
-  this.draw = function(chart) {
+  this.draw = function(parent, chart) {
     var ctx = chart.getMemoryCanvas();
     // Clear the in-memory context for the renderer.
     ctx.clearRect(0, 0, chart.options.width, chart.options.height);
@@ -488,7 +488,7 @@ CLACK.ScatterPlotRenderer = function(options) {
   // Size of the dots!
   options.dotSize = options.dotSize || 2;
 
-  this.draw = function(chart) {
+  this.draw = function(parent, chart) {
     var ctx = chart.getMemoryCanvas();
     // Clear the in-memory context for the renderer.
     ctx.clearRect(0, 0, chart.options.width, chart.options.height);
@@ -527,7 +527,7 @@ CLACK.InstantRenderer = function(options) {
 
   this.domSeriesDivs = undefined;
 
-  this.draw = function(chart, ctx) {
+  this.draw = function(parent, chart) {
 
     // Making these here so that aren't being made inside the loop
     var nameFetcher = function(s) {
@@ -549,7 +549,7 @@ CLACK.InstantRenderer = function(options) {
       var c = chart.contexts[ctxName];
 
       if(this.demSeriesDivs === undefined) {
-        this.demSeriesDivs = d3.select(chart.inner).selectAll("div")
+        this.demSeriesDivs = d3.select(parent).selectAll("div")
           // XXX Need a key for efficient updates here, series name or a UUID or something?
           .data(c.series)
           .enter().append('div')
@@ -620,7 +620,7 @@ CLACK.HistogramHeatMapRenderer = function(options) {
   // Scale of color. Uses CLACK.makeScale
   options.colorScale = options.colorScale || 'log';
 
-  this.draw = function(chart) {
+  this.draw = function(parent, chart) {
     var ctx = chart.getMemoryCanvas();
     // Clear the in-memory context for the renderer.
     ctx.clearRect(0, 0, chart.options.width, chart.options.height);
