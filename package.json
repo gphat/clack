@@ -1,0 +1,17 @@
+{
+  "name": "clack",
+  "version": "1.0.0",
+  "description": "Clack",
+  "repository": {
+    "type": "git",
+    "url": "git@bitbucket.org:gphat/clack.git"
+  },
+  "author": "",
+  "license": "BSD",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-uglify": "~0.2.2",
+    "grunt-contrib-jshint": "~0.6.2",
+    "grunt-contrib-clean": "~0.5.0"
+  }
+}
