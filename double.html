@@ -17,7 +17,7 @@ $(document).ready(function() {
   var c = new CLACK.Chart(
     document.getElementById('chartContainer'), {
       width: 1200,
-      height: 400,
+      height: 300,
       renderer: dub
     }
   );
@@ -69,8 +69,8 @@ $(document).ready(function() {
       // console.timeEnd('redraw');
       x += 1;
     }
-    setTimeout(addAPoint,250);
+    setTimeout(addAPoint,1000);
   }
-  setTimeout(addAPoint,250);
+  setTimeout(addAPoint,1000);
 });
 </script>

@@ -685,12 +685,13 @@ CLACK.InstantRenderer = function(options) {
           .style('text-align', 'center')
           .style('border-bottom', '1px solid #ccc')
           .style('padding', '.05em');
+
         // Min
         this.demSeriesDivs.append('p').text(minFormatter)
           .style('text-align', 'center')
           .attr('data-min', 'true');
-        // Current
 
+        // Current
         this.demSeriesDivs.append('div')
           .text(currFormatter)
           .style('border-bottom', '1px solid #ccc')
