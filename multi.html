@@ -77,15 +77,15 @@ $(document).ready(function() {
     for(var j = 0; j < series; j++) {
       var y = Math.floor(Math.random() * 50);
       // console.time('redraw');
-      c.addToSeries('other', j, [x], [Math.floor(Math.random() * 100)], true);
+      c.addToSeries('other', j, [x + 103419], [Math.floor(Math.random() * 100)], true);
 
       c.draw();
       // console.timeEnd('redraw');
       x += 1;
     }
 
-    setTimeout(addAPoint,500);
+    setTimeout(addAPoint,1000);
   }
-  // setTimeout(addAPoint,500);
+  setTimeout(addAPoint,1000);
 });
 </script>
