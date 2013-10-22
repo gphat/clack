@@ -27,7 +27,7 @@ $(document).ready(function() {
       exes.push(cuckoo.timeseries[i].data[j][0]);
       whys.push(cuckoo.timeseries[i].data[j][1]);
     }
-    c.addSeries({
+    c.addSeries('default', {
       x: exes,
       y: whys
     });

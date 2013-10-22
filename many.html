@@ -9,6 +9,7 @@ layout: default
 <script>
 $(document).ready(function() {
   var charts = [];
+  var colors = d3.scale.category10();
   console.time("many charts");
   for(var x = 0; x <= 20; x++) {
 
@@ -35,11 +36,11 @@ $(document).ready(function() {
         exes.push(i);
         whys.push((j + 1) * Math.sin(2 * Math.PI * j + i + currentDate.getSeconds()));
       }
-      c.addSeries({
+      c.addSeries('default', {
         x: exes,
         y: whys,
         label: 'foobar ' + j,
-        color: 'hsla(' + Math.random() * 360 + ", 100%, 50%, 1)"
+        color: colors(j)
       });
     }
 

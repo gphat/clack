@@ -2,7 +2,7 @@
 layout: default
 ---
 
-<p>Just a boring chart.</p>
+<p>Multi till the sun die.</p>
 
 <div id="chartContainer" style="display: inline-block; position: relative"></div>
 
@@ -22,30 +22,47 @@ $(document).ready(function() {
     color: '#000'
   }
 
-  var series = 4;
+  var series = 2;
   var points = 30;
 
   c.addMarker(tracker);
 
   var currentDate = new Date();
-
-  var colors = d3.scale.category10();
   
+  var colors = d3.scale.category10();
+
   // console.time("generatechart");
-  for(var j = 0; j <= series; j++) {
+  for(var j = 0; j < series; j++) {
     var exes = [];
     var whys = [];
     for(var i = 0; i <= points; i++) {
       exes.push(i);
-      whys.push((j + 1) * Math.sin(2 * Math.PI * j + i + currentDate.getSeconds()));
+      whys.push((j + 1) * Math.sin(2.45 * Math.PI * j + i + currentDate.getSeconds()) * 2);
     }
     c.addSeries('default', {
       x: exes,
       y: whys,
-      label: 'foobar ' + j,
+      label: 'default ' + j,
       color: colors(j)
     });
   }
+  
+  // The other one!
+  for(var j = 0; j < series; j++) {
+    var exes = [];
+    var whys = [];
+    for(var i = 0; i <= points; i++) {
+      exes.push(i);
+      whys.push(Math.floor(Math.random() * 100));
+    }
+    c.addSeries('other', {
+      x: exes,
+      y: whys,
+      label: 'other ' + j,
+      color: colors(j + series)
+    });
+  }
+
   // console.timeEnd("generatechart");
 
   c.draw();

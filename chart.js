@@ -124,8 +124,14 @@ CLACK.Chart = function(parent, options) {
     return ctx.markers.length;
   };
 
-  this.addSeries = function(series) {
-    var ctx = this.contexts['default'];
+  this.addSeries = function(ctxName, series) {
+    var ctx = this.contexts[ctxName];
+
+    if(ctx === undefined) {
+      // A new context appears!
+      ctx = new CLACK.Context();
+      this.contexts[ctxName] = ctx;
+    }
 
     ctx.series.push(series);
     // Establish some defaults that can be later.
@@ -136,7 +142,7 @@ CLACK.Chart = function(parent, options) {
     series.ymin = Infinity;
     series.yrange = 0;
     var idx = ctx.series.length - 1;
-    this.updateSeries('default', idx, series.x, series.y);
+    this.updateSeries(ctxName, idx, series.x, series.y);
     return idx;
   };
 
@@ -502,11 +508,14 @@ CLACK.LineRenderer = function(options) {
       this.ctx = this.element.getContext('2d');
     }
 
+    
+    for(var ctxName in chart.contexts) {
+      chart.contexts[ctxName].domainScale.rangeRound([0, parent.width - marginLeft - marginRight]);
+      chart.contexts[ctxName].rangeScale.rangeRound([parent.height - marginBottom - marginTop, 0]);
+    }
+
     // XXX Only the default!!
     var defCtx = chart.getContext('default');
-    defCtx.domainScale.rangeRound([0, parent.width - marginLeft - marginRight]);
-    defCtx.rangeScale.rangeRound([parent.height - marginBottom - marginTop, 0]);
-
     chart.drawAxes(parent, defCtx, {
       left: marginLeft,
       bottom: marginBottom,
@@ -519,7 +528,6 @@ CLACK.LineRenderer = function(options) {
     // Iterate over each context
     for(var ctxName in chart.contexts) {
       var c = chart.contexts[ctxName];
-
       // Iterate over each series
       for(var j = 0; j < c.series.length; j++) {
         // Create a new path for each series.

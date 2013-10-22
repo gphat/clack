@@ -22,6 +22,8 @@ $(document).ready(function() {
 
   var currentDate = new Date();
   
+  var colors = d3.scale.category10();
+
   // console.time("generatechart");
   for(var j = 0; j <= series; j++) {
     var exes = [];
@@ -30,12 +32,12 @@ $(document).ready(function() {
       exes.push(i);
       whys.push((j + 1) * Math.sin(2 * Math.PI * j + i + currentDate.getSeconds()));
     }
-    c.addSeries({
+    c.addSeries('default', {
       name: 'Series ' + j,
       x: exes,
       y: whys,
       label: 'foobar ' + j,
-      color: 'hsla(' + Math.random() * 360 + ", 100%, 50%, 1)"
+      color: colors(j)
     });
   }
   // console.timeEnd("generatechart");
