@@ -14,18 +14,8 @@ $(document).ready(function() {
     }
   );
 
-  var tracker = {
-    x1: undefined,
-    x2: undefined,
-    y1: undefined,
-    y2: undefined,
-    color: '#000'
-  }
-
   var series = 2;
   var points = 30;
-
-  c.addMarker(tracker);
 
   var currentDate = new Date();
   
@@ -52,7 +42,7 @@ $(document).ready(function() {
     var exes = [];
     var whys = [];
     for(var i = 0; i <= points; i++) {
-      exes.push(i);
+      exes.push(i + 103419);
       whys.push(Math.floor(Math.random() * 100));
     }
     c.addSeries('other', {
@@ -62,6 +52,10 @@ $(document).ready(function() {
       color: colors(j + series)
     });
   }
+  c.getContext('other').rangeAxisOrientation = 'right';
+  c.getContext('other').domainAxisOrientation = 'top';
+  c.getContext('other').showDomainGrid = false;
+  c.getContext('other').showRangeGrid = false;
 
   // console.timeEnd("generatechart");
 
@@ -70,27 +64,28 @@ $(document).ready(function() {
 
   var x = points;
   var addAPoint = function() {
-    for(var j = 0; j <= series; j++) {
+    for(var j = 0; j < series; j++) {
       var y = Math.floor(Math.random() * 50);
       // console.time('redraw');
-      c.addToSeries('default', j, [x], [(j + 1) * Math.sin(2 * Math.PI * j + x)]);
+      c.addToSeries('default', j, [x], [(j + 1) * Math.sin(2 * Math.PI * j + x)], true);
 
       c.draw();
       // console.timeEnd('redraw');
       x += 1;
     }
-    setTimeout(addAPoint,100);
-  }
-  // setTimeout(addAPoint,100);
 
-  // XXX These need to be on the inner canvas, not on the container.
-  $('#chartContainer').mouseleave(function(e) {
-    tracker.x1 = undefined;
-    c.drawDecorations();
-  });
-  $('#chartContainer').mousemove(function(e) {
-    tracker.x1 = e.offsetX;
-    c.drawDecorations();
-  });
+    for(var j = 0; j < series; j++) {
+      var y = Math.floor(Math.random() * 50);
+      // console.time('redraw');
+      c.addToSeries('other', j, [x], [Math.floor(Math.random() * 100)], true);
+
+      c.draw();
+      // console.timeEnd('redraw');
+      x += 1;
+    }
+
+    setTimeout(addAPoint,500);
+  }
+  // setTimeout(addAPoint,500);
 });
 </script>

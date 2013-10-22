@@ -11,11 +11,17 @@ var CLACK = CLACK || {};
 CLACK.Context = function() {
   return {    
     domainAxis: undefined,
+    domainAxisOrientation: 'bottom',
     domainScale: undefined,
     domainScaleType: 'linear',
+    showDomainAxis: true,
+    showDomainGrid: true,
+    showRangeAxis: true,
+    showRangeGrid: true,
     maxLength: undefined,
     minLength: undefined,
     rangeAxis: undefined,
+    rangeAxisOrientation: 'left',
     rangeScale: undefined,
     rangeScaleType: 'linear',
     series: [],
@@ -34,12 +40,6 @@ CLACK.Chart = function(parent, options) {
   // XXX Make sure this is an object and give reasonable error messages.
   this.options = options || {};
 
-  if(this.options.axes === undefined) {
-    this.options.axes = true;
-  }
-  if(this.options.grids === undefined) {
-    this.options.grids = true;
-  }
   this.options.gridColor = this.options.gridColor || '#ccc';
 
   this.options.width = this.options.width || 500;
@@ -49,8 +49,6 @@ CLACK.Chart = function(parent, options) {
 
   // Clear the contents of the chart, destroying urthang.
   this.clear = function() {
-    // This D3 handling seems hinky.
-    this.d3shit = undefined;
     // Clean up the in memory stuff.
     this._memCtx = undefined;
     this._memElement = undefined;
@@ -268,7 +266,27 @@ CLACK.Chart = function(parent, options) {
     // console.timeEnd('draw');
   };
 
-  this.drawAxes = function(parent, context, margins) {
+  this.drawAxes = function(parent, ctxName, margins) {
+    var context = this.contexts[ctxName];
+    if(context.showDomainGrid || context.showRangeGrid || context.showRangeAxis || context.showDomainAxis) {
+      if(context.d3shit === undefined) {
+        context.d3shit = d3.select(parent)
+          .append("svg")
+          .attr("class", "chart")
+          .attr("clack-context", context)
+          .attr("width", parent.width)
+          .attr("height", parent.height)
+          .style("position", "absolute")
+          .append("g");
+      }
+    } else {
+      // Nix the svg, if we have one!
+      // XXX Must we use jquery here?
+      $(this.inner).find("svg").remove();
+      context.d3shit = undefined;
+      // Nothing else to do, return.
+      return;
+    }
 
     margins = margins || {};
     margins.left = margins.left || 40;
@@ -276,75 +294,77 @@ CLACK.Chart = function(parent, options) {
     margins.bottom = margins.bottom || 40;
     margins.top = margins.top || 0;
 
+    // The default "bottom" case
+    var domX = margins.left;
+    var domY = parent.height - margins.bottom;
+    if(context.domainAxisOrientation === "top") {
+      domX = margins.left;
+      domY = margins.top;
+    }
+
+    // The default "left" case
+    var rangeX = margins.left;
+    var rangeY = margins.top;
+    if(context.rangeAxisOrientation === "right") {
+      rangeX = parent.width - margins.right;
+      rangeY = margins.top;
+    }
+
     // Handle the axes in the common draw method before calling the renderer.
     // Only create the axes if they don't already exist.
-    if(this.options.axes) {
-      if(context.domainAxis === undefined) {
-        context.domainAxis = d3.svg.axis().scale(context.domainScale).orient('bottom').tickSize(1);
-        context.rangeAxis = d3.svg.axis().scale(context.rangeScale).orient('left').tickSize(1);
-      } else {
-        // If the axes already exist transition them so they can be updated
-        // if they have changed.
-        this.ax.transition().call(context.domainAxis);
-        this.ay.transition().call(context.rangeAxis);
-
-        if(this.options.grids === true) {
-          // remove the ticks. Can't get them to move right so be lazy and re-add them
-          this.d3shit.selectAll("line.x").remove();
-          this.d3shit.selectAll("line.y").remove();
+    if(context.showDomainAxis || context.showRangeAxis) {
+      if(context.showDomainAxis) {
+        if(context.domainAxis === undefined) {
+          context.domainAxis = d3.svg.axis().scale(context.domainScale).orient(context.domainAxisOrientation).tickSize(1);
+          context.ax = context.d3shit.append('g')
+            .attr("class", "xaxis")
+            .attr("transform", "translate(" + domX + "," + domY + ")")
+            .call(context.domainAxis);
+        } else {
+          context.ax.transition().call(context.domainAxis);
         }
       }
+      if(context.showRangeAxis) {
+        if(context.rangeAxis === undefined) {
+          context.rangeAxis = d3.svg.axis().scale(context.rangeScale).orient(context.rangeAxisOrientation).tickSize(1);
+          context.ay = context.d3shit.append('g')
+            .attr("class", "yaxis")
+            .attr("transform", "translate(" + rangeX + "," + rangeY + ")")
+            .call(context.rangeAxis);
+        } else {
+          context.ay.transition().call(context.rangeAxis);
+        }
+      }        
+    }
 
-      // Draw the background grid.
-      if(this.d3shit === undefined) {
-        this.d3shit = d3.select(parent)
-          .append("svg")
-          .attr("class", "chart")
-          .attr("width", parent.width)
-          .attr("height", parent.height)
-          .append("g");
+    // remove the ticks. Can't get them to move right so be lazy and re-add them. XXX
+    if(context.showDomainGrid === true) {
+      context.d3shit.selectAll("line.x").remove();
 
-        this.ax = this.d3shit.append('g')
-          .attr("class", "xaxis")
-          .attr("transform", "translate(" + margins.left + "," + (parent.height - margins.bottom) + ")")
-          .call(context.domainAxis);
-         
-        this.ay = this.d3shit.append('g')
-          .attr("class", "yaxis")
-          .attr("transform", "translate(" + margins.left + ",0)")
-          .call(context.rangeAxis);
-      }
+      context.d3shit.selectAll("line.x")
+        .data(context.domainScale.ticks(5))
+        .enter().append("line")
+        .attr("class", "x")
+        .attr("x1", context.domainScale)
+        .attr("x2", context.domainScale)
+        .attr("y1", margins.top)
+        .attr("y2", this.options.height - margins.bottom)
+        .attr("transform", "translate(" + margins.left + ", 0)")
+        .style("stroke", this.options.gridColor);
+    }
+    if(context.showRangeGrid === true) {
+      context.d3shit.selectAll("line.y").remove();
 
-      if(this.options.grids) {
-        // Draw the grids. Done regardless because re-draws remove them.
-        this.d3shit.selectAll("line.x")
-          .data(context.domainScale.ticks(5))
-          .enter().append("line")
-          .attr("class", "x")
-          .attr("x1", context.domainScale)
-          .attr("x2", context.domainScale)
-          .attr("y1", 0)
-          .attr("y2", this.options.height - margins.bottom - margins.top)
-          .attr("transform", "translate(" + margins.left + ", 0)")
-          .style("stroke", this.options.gridColor);
-
-        this.d3shit.selectAll("line.y")
-          .data(context.rangeScale.ticks(5))
-          .enter().append("line")
-          .attr("class", "y")
-          .attr("x1", 0)
-          .attr("x2", this.options.width - margins.left - margins.right)
-          .attr("y1", context.rangeScale)
-          .attr("y2", context.rangeScale)
-          .attr("transform", "translate(" + margins.left + " , 0)")
-          .style("stroke", this.options.gridColor);
-      }
-
-    } else {
-      // Nix the svg, if we have one!
-      // XXX Must we use jquery here?
-      this.d3shit = undefined;
-      $(this.inner).find("svg").remove();
+      context.d3shit.selectAll("line.y")
+        .data(context.rangeScale.ticks(5))
+        .enter().append("line")
+        .attr("class", "y")
+        .attr("x1", 0)
+        .attr("x2", this.options.width - margins.left - margins.right)
+        .attr("y1", context.rangeScale)
+        .attr("y2", context.rangeScale)
+        .attr("transform", "translate(" + margins.left + " , 0)")
+        .style("stroke", this.options.gridColor);
     }
   };
 
@@ -491,8 +511,8 @@ CLACK.LineRenderer = function(options) {
     // Make these options!
     var marginLeft = 40;
     var marginBottom = 20;
-    var marginTop = 0;
-    var marginRight = 0;
+    var marginTop = 20;
+    var marginRight = 40;
 
     // Create our canvas element if we haven't already.
     if(this.element === undefined) {
@@ -507,20 +527,7 @@ CLACK.LineRenderer = function(options) {
       parent.appendChild(this.element);
       this.ctx = this.element.getContext('2d');
     }
-
     
-    for(var ctxName in chart.contexts) {
-      chart.contexts[ctxName].domainScale.rangeRound([0, parent.width - marginLeft - marginRight]);
-      chart.contexts[ctxName].rangeScale.rangeRound([parent.height - marginBottom - marginTop, 0]);
-    }
-
-    // XXX Only the default!!
-    var defCtx = chart.getContext('default');
-    chart.drawAxes(parent, defCtx, {
-      left: marginLeft,
-      bottom: marginBottom,
-    });
-
     var ctx = chart.getMemoryCanvas();
     // Clear the in-memory context for the renderer.
     ctx.clearRect(0, 0, chart.options.width, chart.options.height);
@@ -528,6 +535,17 @@ CLACK.LineRenderer = function(options) {
     // Iterate over each context
     for(var ctxName in chart.contexts) {
       var c = chart.contexts[ctxName];
+
+      c.domainScale.rangeRound([0, parent.width - marginLeft - marginRight]);
+      c.rangeScale.rangeRound([parent.height - marginBottom - marginTop, 0]);
+
+      chart.drawAxes(parent, ctxName, {
+        top: marginTop,
+        right: marginRight,
+        bottom: marginBottom,
+        left: marginLeft
+      });
+
       // Iterate over each series
       for(var j = 0; j < c.series.length; j++) {
         // Create a new path for each series.
@@ -597,15 +615,6 @@ CLACK.ScatterPlotRenderer = function(options) {
       this.ctx = this.element.getContext('2d');
     }
 
-    var defCtx = chart.getContext('default');
-    defCtx.domainScale.rangeRound([0, parent.width - marginLeft - marginRight]);
-    defCtx.rangeScale.rangeRound([parent.height - marginBottom - marginTop, 0]);
-
-    chart.drawAxes(parent, defCtx, {
-      left: marginLeft,
-      bottom: marginBottom,
-    });
-
     var ctx = chart.getMemoryCanvas();
     // Clear the in-memory context for the renderer.
     ctx.clearRect(0, 0, chart.options.width, chart.options.height);
@@ -613,6 +622,16 @@ CLACK.ScatterPlotRenderer = function(options) {
     // Iterate over each context
     for(var ctxName in chart.contexts) {
       var c = chart.contexts[ctxName];
+
+      c.domainScale.rangeRound([0, parent.width - marginLeft - marginRight]);
+      c.rangeScale.rangeRound([parent.height - marginBottom - marginTop, 0]);
+
+      chart.drawAxes(parent, ctxName, {
+        top: marginTop,
+        right: marginRight,
+        bottom: marginBottom,
+        left: marginLeft
+      });
 
       // Iterate over each series
       for(var j = 0; j < c.series.length; j++) {
@@ -774,15 +793,6 @@ CLACK.HistogramHeatMapRenderer = function(options) {
       this.ctx = this.element.getContext('2d');
     }
 
-    var defCtx = chart.getContext('default');
-    defCtx.domainScale.rangeRound([0, parent.width - marginLeft - marginRight]);
-    defCtx.rangeScale.rangeRound([parent.height - marginBottom - marginTop, 0]);
-
-    chart.drawAxes(parent, defCtx, {
-      left: marginLeft,
-      bottom: marginBottom,
-    });
-
     var ctx = chart.getMemoryCanvas();
     // Clear the in-memory context for the renderer.
     ctx.clearRect(0, 0, chart.options.width, chart.options.height);
@@ -791,6 +801,16 @@ CLACK.HistogramHeatMapRenderer = function(options) {
     for(var ctxName in chart.contexts) {
       // Not sure what to do with multiple contexts here yet…
       var c = chart.contexts[ctxName];
+
+      c.domainScale.rangeRound([0, parent.width - marginLeft - marginRight]);
+      c.rangeScale.rangeRound([parent.height - marginBottom - marginTop, 0]);
+
+      chart.drawAxes(parent, ctxName, {
+        top: marginTop,
+        right: marginRight,
+        bottom: marginBottom,
+        left: marginLeft
+      });
 
       var exes = {};
       // Create a map of x values to y values, as we need to bucket them.
