@@ -13,7 +13,7 @@ Clack might be a charting library. It's really just a side project that may or m
 
 ### Leverage D3 or whatever makes sense.
 
-Renderers can use whatever they want, so long as they stay within their dom element. This might be D3 or Canvas or WebGL!
+Renderers can use whatever they want, so long as they stay within their dom element. This might be D3 or Canvas or WebGL! Currently has a hodgepodge of Canvas an D3, usually using Canvas for drawing and D3 for axes, since the latter don't need to be super fast and don't use thousands of elements. Plus D3 is super good at that shit.
 
 ### Flexible
 
