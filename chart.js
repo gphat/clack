@@ -641,6 +641,7 @@ CLACK.ScatterPlotRenderer = function(options) {
         ctx.fillStyle = c.series[j].color;
 
         for(var k = 0; k < c.series[j].x.length; k++) {
+          ctx.moveTo(c.domainScale(c.series[j].x[k]), c.rangeScale(c.series[j].y[k]));
           ctx.arc(c.domainScale(c.series[j].x[k]), c.rangeScale(c.series[j].y[k]), options.dotSize, 0, 2*Math.PI);
         }
         ctx.fill();
