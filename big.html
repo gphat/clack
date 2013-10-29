@@ -4,7 +4,7 @@ layout: default
 
 <p>2,000 series with 3,000 points each.</p>
 
-<div id="chartContainer" style="bposition: relative; display: inline-block"></div>
+<div id="chartContainer" style="position: relative; display: inline-block"></div>
 
 <script>
 $(document).ready(function() {
@@ -13,18 +13,8 @@ $(document).ready(function() {
     document.getElementById('chartContainer'), { width: 800, height: 400 }
   );
 
-  var tracker = {
-    x1: undefined,
-    x2: undefined,
-    y1: undefined,
-    y2: undefined,
-    color: '#000'
-  }
-
   var series = 2000;
   var points = 3000;
-
-  c.addMarker(tracker);
 
   var currentDate = new Date();
   
@@ -49,14 +39,5 @@ $(document).ready(function() {
 
   c.draw();
   c.drawDecorations();
-
-  $('#chartContainer').mouseleave(function(e) {
-    tracker.x1 = undefined;
-    c.drawDecorations();
-  });
-  $('#chartContainer').mousemove(function(e) {
-    tracker.x1 = e.offsetX;
-    c.drawDecorations();
-  });
 });
 </script>
