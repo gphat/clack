@@ -11,6 +11,10 @@ Clack might be a charting library. It's really just a side project that may or m
 
 ## Goals
 
+### Leverage D3 or whatever makes sense.
+
+Renderers can use whatever they want, so long as they stay within their dom element. This might be D3 or Canvas or WebGL!
+
 ### Flexible
 
 Clack will stay out of your way. Most changes will require working directly with the [Canvas API](https://developer.mozilla.org/en-US/docs/HTML/Canvas).
@@ -25,7 +29,7 @@ Needs to be able to deal with thousands of series each with tens of thousands of
 
 ### Don't Give A Shit About File Size
 
-Not at all. Bring on the deps.
+Not at all.
 
 ## Dependencies
 
