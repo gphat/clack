@@ -13,18 +13,8 @@ $(document).ready(function() {
     document.getElementById('chartContainer'), { width: 500, height: 200 }
   );
 
-  var tracker = {
-    x1: undefined,
-    x2: undefined,
-    y1: undefined,
-    y2: undefined,
-    color: '#000'
-  }
-
   var series = 4;
   var points = 30;
-
-  c.addMarker(tracker);
 
   var currentDate = new Date();
   
@@ -48,7 +38,6 @@ $(document).ready(function() {
   // console.timeEnd("generatechart");
 
   c.draw();
-  c.drawDecorations();
 
   var x = points + 1;
   var addAPoint = function() {

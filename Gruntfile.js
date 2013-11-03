@@ -10,12 +10,12 @@ module.exports = function(grunt) {
     uglify: {
       js: {
         files: {
-          'dist/chart-min.js': ['chart.js']
+          'dist/chart-min.js': ['src/*.js']
         }
       }
     },
     jshint: {
-      all: ['chart.js']
+      all: ['src/*.js']
     }
   });
   grunt.loadNpmTasks('grunt-contrib-clean');

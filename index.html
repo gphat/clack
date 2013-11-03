@@ -16,18 +16,8 @@ $(document).ready(function() {
     }
   );
 
-  var tracker = {
-    x1: undefined,
-    x2: undefined,
-    y1: undefined,
-    y2: undefined,
-    color: '#000'
-  }
-
   var series = 4;
   var points = 30;
-
-  c.addMarker(tracker);
 
   var currentDate = new Date();
 
@@ -51,7 +41,6 @@ $(document).ready(function() {
   // console.timeEnd("generatechart");
 
   c.draw();
-  c.drawDecorations();
 
   var x = points;
   var addAPoint = function() {
@@ -67,15 +56,5 @@ $(document).ready(function() {
     setTimeout(addAPoint,100);
   }
   // setTimeout(addAPoint,100);
-
-  // XXX These need to be on the inner canvas, not on the container.
-  $('#chartContainer').mouseleave(function(e) {
-    tracker.x1 = undefined;
-    c.drawDecorations();
-  });
-  $('#chartContainer').mousemove(function(e) {
-    tracker.x1 = e.offsetX;
-    c.drawDecorations();
-  });
 });
 </script>
