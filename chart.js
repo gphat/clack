@@ -763,7 +763,7 @@ CLACK.HistogramHeatMapRenderer = function(options) {
   // default is to just return the color's value but other implementations might return
   // 'rgba(0, 0, 255, $color)' to adjust the alpha channel.  The result of this is passed
   // to the canvas context's `fillStyle` property.
-  options.colorFunction = options.colorScaleStart || function(color) { return color; };
+  options.colorFunction = options.colorFunction || function(color) { return color; };
   // Color scale start value.
   options.colorScaleStart = options.colorScaleStart || 'blue';
   // Color scale end value.
