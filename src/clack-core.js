@@ -255,7 +255,7 @@ CLACK.Chart = function(parent, options) {
       var marginLeft = 40;
       var marginBottom = 20;
       var marginTop = 20;
-      var marginRight = 40;
+      var marginRight = 0;
 
       var cWidth = this.inner.width - marginLeft - marginRight;
       var cHeight = this.inner.height - marginBottom - marginTop;
@@ -287,6 +287,51 @@ CLACK.Chart = function(parent, options) {
     } 
     // console.timeEnd('draw');
   };
+
+  // this.drawDecorations = function() {
+  //   var self = this;
+
+  //   var ctx = this.getMemoryCanvas();
+  //   // Clear the in-memory context for the renderer.
+  //   ctx.clearRect(0, 0, this.options.width, this.options.height);
+  //   // Begin a new path, just in case
+  //   ctx.beginPath();
+
+  //   for(var ctxName in self.contexts) {
+  //     var c = self.contexts[ctxName];
+  //     if(c.markers.length > 0) {
+  //       // Iterate over any markers
+  //       for(var i = 0; i < c.markers.length; i++) {
+  //         var m = c.markers[i];
+  //         if(m.x1 !== undefined) {
+  //           if(m.x2 !== undefined) {
+  //             // XXX Draw a box
+  //           } else {
+  //             // Just a simple line
+  //             ctx.beginPath();
+  //             ctx.strokeStyle = m.color;
+  //             ctx.lineWidth = 1;
+  //             ctx.moveTo(m.x1, 0);
+  //             ctx.lineTo(m.x1, self.options.height);
+  //             ctx.stroke();
+  //           }
+  //         } else if(m.y1 !== undefined) {
+  //           if(m.y2 !== undefined) {
+  //             // XXX Draw a box
+  //           } else {
+  //             // Just a simple line
+  //             ctx.beginPath();
+  //             ctx.strokeStyle = m.color;
+  //             ctx.lineWidth = 3;
+  //             ctx.moveTo(0, m.y1);
+  //             ctx.lineTo(self.options.width, m.y1);
+  //             ctx.stroke();
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  // };
 
   this.drawAxes = function(parent, ctxName, margins) {
     var context = this.contexts[ctxName];

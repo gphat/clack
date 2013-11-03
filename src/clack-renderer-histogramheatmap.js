@@ -33,12 +33,8 @@ CLACK.HistogramHeatMapRenderer = function(options) {
     if(this.element === undefined) {
       this.element = document.createElement('canvas');
       this.element.style.position = 'absolute';
-      // Only if the axes are here… XXX
-      // this.element.style.left = marginLeft + "px";
-      // this.element.style.top = marginTop + "px";
       this.element.width = parentWidth;
       this.element.height = parentHeight;
-      // this.element.style.zIndex = 0;
       parent.appendChild(this.element);
       this.ctx = this.element.getContext('2d');
     }
