@@ -24,6 +24,12 @@ $(document).ready(function() {
   
   var colors = d3.scale.category10();
 
+  var context = c.getContext('default');
+  context.showRangeAxis = false;
+  context.showRangeGrid = false;
+  context.showDomainAxis = false;
+  context.showDomainGrid = false;
+
   // console.time("generatechart");
   for(var j = 0; j <= series; j++) {
     var exes = [];
@@ -43,7 +49,6 @@ $(document).ready(function() {
   // console.timeEnd("generatechart");
 
   c.draw();
-  c.drawDecorations();
 
   var x = points;
   var addAPoint = function() {

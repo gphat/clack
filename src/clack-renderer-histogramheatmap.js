@@ -20,40 +20,43 @@ CLACK.HistogramHeatMapRenderer = function(options) {
     if(this.element !== undefined) {
       ($this.element).remove();
     }
+    this.ctx = undefined;
+    this.memCtx = undefined;
+    this.memElement = undefined;
   };
 
   this.draw = function(c, parent, chart) {
-    // Make these options!
-    var marginLeft = 40;
-    var marginBottom = 20;
-    var marginTop = 0;
-    var marginRight = 0;
+    var parentWidth = parseInt(parent.style.width, 10);
+    var parentHeight = parseInt(parent.style.height, 10);
 
     // Create our canvas element if we haven't already.
     if(this.element === undefined) {
       this.element = document.createElement('canvas');
       this.element.style.position = 'absolute';
-      this.element.style.left = marginLeft + "px";
-      this.element.style.top = marginTop + "px";
-      this.element.width = parent.width - marginLeft - marginRight;
-      this.element.height = parent.height - marginBottom - marginTop;
+      // Only if the axes are here… XXX
+      // this.element.style.left = marginLeft + "px";
+      // this.element.style.top = marginTop + "px";
+      this.element.width = parentWidth;
+      this.element.height = parentHeight;
+      // this.element.style.zIndex = 0;
       parent.appendChild(this.element);
       this.ctx = this.element.getContext('2d');
     }
 
-    var ctx = chart.getMemoryCanvas();
+    if(this.memElement === undefined) {
+      this.memElement = document.createElement('canvas');
+      this.memElement.width = parentWidth;
+      this.memElement.height = parentHeight;
+    }
+
+    if(this.memCtx === undefined) {
+      // Create an in-memory canvas!
+      this.memCtx = this.memElement.getContext('2d');
+    }
+
+    var ctx = this.memCtx;
     // Clear the in-memory context for the renderer.
     ctx.clearRect(0, 0, chart.options.width, chart.options.height);
-
-    c.domainScale.rangeRound([0, parent.width - marginLeft - marginRight]);
-    c.rangeScale.rangeRound([parent.height - marginBottom - marginTop, 0]);
-
-    chart.drawAxes(parent, ctxName, {
-      top: marginTop,
-      right: marginRight,
-      bottom: marginBottom,
-      left: marginLeft
-    });
 
     var exes = {};
     // Create a map of x values to y values, as we need to bucket them.
@@ -111,8 +114,8 @@ CLACK.HistogramHeatMapRenderer = function(options) {
 
     var fctx = this.ctx;
     // Clear the current in-browser context.
-    fctx.clearRect(0, 0, chart.options.width, chart.options.height);
+    fctx.clearRect(0, 0, parentWidth, parentHeight);
     // Copy the contents on the in-memory canvas into the displayed one.
-    fctx.drawImage(chart.getMemoryElement(), 0, 0);    
+    fctx.drawImage(this.memElement, 0, 0);    
   };
 };

@@ -18,8 +18,8 @@ CLACK.LineRenderer = function(options) {
   };
 
   this.draw = function(c, parent, chart) {
-    var parentWidth = Number(parent.style.width);
-    var parentHeight = Number(parent.style.height);
+    var parentWidth = parseInt(parent.style.width, 10);
+    var parentHeight = parseInt(parent.style.height, 10);
 
     // Create our canvas element if we haven't already.
     if(this.element === undefined) {

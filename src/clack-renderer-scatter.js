@@ -16,19 +16,15 @@ CLACK.ScatterPlotRenderer = function(options) {
 
   this.draw = function(c, parent, chart) {
 
-    var parentWidth = Number(parent.style.width);
-    var parentHeight = Number(parent.style.height);
+    var parentWidth = parseInt(parent.style.width, 10);
+    var parentHeight = parseInt(parent.style.height, 10);
 
     // Create our canvas element if we haven't already.
     if(this.element === undefined) {
       this.element = document.createElement('canvas');
       this.element.style.position = 'absolute';
-      // Only if the axes are here… XXX
-      // this.element.style.left = marginLeft + "px";
-      // this.element.style.top = marginTop + "px";
       this.element.width = parentWidth;
       this.element.height = parentHeight;
-      // this.element.style.zIndex = 0;
       parent.appendChild(this.element);
       this.ctx = this.element.getContext('2d');
     }
@@ -37,10 +33,6 @@ CLACK.ScatterPlotRenderer = function(options) {
       this.memElement = document.createElement('canvas');
       this.memElement.width = parentWidth;
       this.memElement.height = parentHeight;
-    }
-
-    if(this.memCtx === undefined) {
-      // Create an in-memory canvas!
       this.memCtx = this.memElement.getContext('2d');
     }
 
@@ -64,7 +56,7 @@ CLACK.ScatterPlotRenderer = function(options) {
 
     var fctx = this.ctx;
     // Clear the current in-browser context.
-    fctx.clearRect(0, 0, chart.options.width, chart.options.height);
+    fctx.clearRect(0, 0, parentWidth, parentHeight);
     // Copy the contents on the in-memory canvas into the displayed one.
     fctx.drawImage(this.memElement, 0, 0);
   };

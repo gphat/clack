@@ -291,6 +291,12 @@ CLACK.Chart = function(parent, options) {
 
   this.drawAxes = function(parent, ctxName, margins) {
     var context = this.contexts[ctxName];
+
+    // No axes? don't bother then.
+    if(!context.showDomainGrid || !context.showRangeGrid || !context.showRangeAxis || !context.showDomainAxis) {
+      return;
+    }
+
     if(context.showDomainGrid || context.showRangeGrid || context.showRangeAxis || context.showDomainAxis) {
       if(context.d3shit === undefined) {
         context.d3shit = d3.select(parent)
