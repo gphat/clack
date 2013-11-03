@@ -242,7 +242,7 @@ CLACK.Chart = function(parent, options) {
 
   // Draw the chart. Erases everything first.
   this.draw = function() {
-    console.time('draw');
+    // console.time('draw');
     for(var ctxName in this.contexts) {
       var c = this.contexts[ctxName];
       if(c.renderer === undefined) {
@@ -285,7 +285,7 @@ CLACK.Chart = function(parent, options) {
 
       this.options.renderer.draw(c, c.root, this);
     } 
-    console.timeEnd('draw');
+    // console.timeEnd('draw');
   };
 
   this.drawAxes = function(parent, ctxName, margins) {
