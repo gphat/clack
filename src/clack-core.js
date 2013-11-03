@@ -251,11 +251,11 @@ CLACK.Chart = function(parent, options) {
         c.renderer = this.options.renderer;
       }
   
-      // Make these options!
+      // These are hardcoded and completely wrong.
       var marginLeft = 40;
       var marginBottom = 20;
-      var marginTop = 0;
-      var marginRight = 0;
+      var marginTop = 20;
+      var marginRight = 40;
 
       var cWidth = this.inner.width - marginLeft - marginRight;
       var cHeight = this.inner.height - marginBottom - marginTop;
@@ -275,7 +275,6 @@ CLACK.Chart = function(parent, options) {
         var e = document.createElement('div');
         e.style.display = 'block';
         e.style.position = 'absolute';
-        e.setAttribute("data-clack-foo", "1");
         e.style.left = marginLeft + "px";
         e.style.top = marginTop + "px";
         e.style.width = cWidth + "px";
@@ -293,7 +292,7 @@ CLACK.Chart = function(parent, options) {
     var context = this.contexts[ctxName];
 
     // No axes? don't bother then.
-    if(!context.showDomainGrid || !context.showRangeGrid || !context.showRangeAxis || !context.showDomainAxis) {
+    if(!context.showDomainGrid && !context.showRangeGrid && !context.showRangeAxis && !context.showDomainAxis) {
       return;
     }
 
