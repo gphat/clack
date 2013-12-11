@@ -10,11 +10,11 @@ CLACK.HistogramHeatMapRenderer = function(options) {
   // to the canvas context's `fillStyle` property.
   options.colorFunction = options.colorFunction || function(color) { return color; };
   // Color scale start value.
-  options.colorScaleStart = options.colorScaleStart || 'blue';
+  options.colorScaleStart = options.colorScaleStart || "blue";
   // Color scale end value.
-  options.colorScaleEnd = options.colorScaleEnd || 'red';
+  options.colorScaleEnd = options.colorScaleEnd || "red";
   // Scale of color. Uses CLACK.makeScale
-  options.colorScale = options.colorScale || 'log';
+  options.colorScale = options.colorScale || "log";
 
   this.clear = function() {
     if(this.element !== undefined) {
@@ -112,6 +112,6 @@ CLACK.HistogramHeatMapRenderer = function(options) {
     // Clear the current in-browser context.
     fctx.clearRect(0, 0, parentWidth, parentHeight);
     // Copy the contents on the in-memory canvas into the displayed one.
-    fctx.drawImage(this.memElement, 0, 0);    
+    fctx.drawImage(this.memElement, 0, 0);
   };
 };

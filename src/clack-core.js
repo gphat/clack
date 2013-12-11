@@ -9,7 +9,7 @@
 var CLACK = CLACK || {};
 
 CLACK.Context = function() {
-  return {    
+  return {
     domainAxis: undefined,
     domainAxisOrientation: 'bottom',
     domainScale: undefined,
@@ -99,7 +99,7 @@ CLACK.Chart = function(parent, options) {
 
   this.addMarker = function(marker) {
     var ctx = this.contexts['default'];
-    
+
     ctx.markers.push(marker);
 
     this.updateContext('default');
@@ -250,12 +250,12 @@ CLACK.Chart = function(parent, options) {
         // XXX Maybe this should go?
         c.renderer = this.options.renderer;
       }
-  
+
       // These are hardcoded and completely wrong.
       var marginLeft = 40;
       var marginBottom = 20;
       var marginTop = 20;
-      var marginRight = 0;
+      var marginRight = 40;
 
       var cWidth = this.inner.width - marginLeft - marginRight;
       var cHeight = this.inner.height - marginBottom - marginTop;
@@ -282,9 +282,8 @@ CLACK.Chart = function(parent, options) {
         this.inner.appendChild(e);
         c.root = e;
       }
-
-      this.options.renderer.draw(c, c.root, this);
-    } 
+      c.renderer.draw(c, c.root, this);
+    }
     // console.timeEnd('draw');
   };
 
@@ -409,7 +408,7 @@ CLACK.Chart = function(parent, options) {
         } else {
           context.ay.transition().call(context.rangeAxis);
         }
-      }        
+      }
     }
 
     // remove the ticks. Can't get them to move right so be lazy and re-add them. XXX

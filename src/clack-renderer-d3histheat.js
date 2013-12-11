@@ -10,9 +10,9 @@ CLACK.D3HistogramHeatMapRenderer = function(options) {
   // to the canvas context's `fillStyle` property.
   options.colorFunction = options.colorFunction || function(color) { return color; };
   // Color scale start value.
-  options.colorScaleStart = options.colorScaleStart || 'blue';
+  options.colorScaleStart = options.colorScaleStart || '#555';
   // Color scale end value.
-  options.colorScaleEnd = options.colorScaleEnd || 'red';
+  options.colorScaleEnd = options.colorScaleEnd || '#CCC';
   // Scale of color. Uses CLACK.makeScale
   options.colorScale = options.colorScale || 'log';
 
@@ -46,7 +46,6 @@ CLACK.D3HistogramHeatMapRenderer = function(options) {
     // the entire set of series.
     var binCount = Math.round(chart.options.height / 5);
     var layout = d3.layout.histogram()
-      // Set the number of bins to the range of our entire context's Y.
       .bins(binCount);
     layout.range([ c.ymin, c.ymax ]);
 
@@ -55,7 +54,9 @@ CLACK.D3HistogramHeatMapRenderer = function(options) {
     var bwidth = chart.options.width / Object.keys(exes).length;
 
     // Create a color range that spans from 0 to the number of Y values in our histogram.
-    var colorScale = CLACK.makeScale(options.colorScale).domain([ 1, c.maxLength ]).range([ options.colorScaleStart, options.colorScaleEnd ]);
+    var colorScale = CLACK.makeScale(options.colorScale)
+      .domain([ 1, c.maxLength ])
+      .range([ options.colorScaleStart, options.colorScaleEnd ]);
 
     var svg = d3.select(parent).append("svg");
 
