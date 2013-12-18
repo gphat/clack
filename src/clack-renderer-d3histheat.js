@@ -73,6 +73,7 @@ CLACK.D3HistogramHeatMapRenderer = function(options) {
         // Only draw a square if we have a value. Don't waste time on empty spots.
         if(v.y > 0) {
           finalData.push({
+            count: v.y,
             color: options.colorFunction(colorScale(v.y)),
             x: 0 + (colIndex * bwidth),
             y: parentHeight - ((bin + 1) * bheight),
@@ -95,6 +96,8 @@ CLACK.D3HistogramHeatMapRenderer = function(options) {
         })
         .attr("y", function(d) {
           return d.y;
-        });
+        })
+        .append("svg:title")
+        .text(function(d) { return d.count; });
   };
 };
