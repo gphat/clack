@@ -18,7 +18,7 @@ $(document).ready(function() {
   var points = 30;
 
   var currentDate = new Date();
-  
+
   var colors = d3.scale.category10();
 
   // console.time("generatechart");
@@ -36,7 +36,7 @@ $(document).ready(function() {
       color: colors(j)
     });
   }
-  
+
   // The other one!
   for(var j = 0; j < series; j++) {
     var exes = [];
@@ -52,6 +52,7 @@ $(document).ready(function() {
       color: colors(j + series)
     });
   }
+  c.getContext('other').renderer = new CLACK.ScatterPlotRenderer();
   c.getContext('other').rangeAxisOrientation = 'right';
   c.getContext('other').domainAxisOrientation = 'top';
   c.getContext('other').showDomainGrid = false;
