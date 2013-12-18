@@ -124,7 +124,7 @@ CLACK.Chart = function(parent, options) {
     series.ymin = Infinity;
     series.yrange = 0;
     var idx = ctx.series.length - 1;
-    this.updateSeries(ctxName, idx, series.x, series.y);
+    this.updateSeries(ctxName, idx);
     return idx;
   };
 
@@ -148,7 +148,6 @@ CLACK.Chart = function(parent, options) {
   // Update stats for the series.
   this.updateSeries = function(ctxName, index) {
     var ctx = this.contexts[ctxName];
-
     series = ctx.series[index];
 
     series.xmax = d3.max(series.x);
@@ -166,7 +165,6 @@ CLACK.Chart = function(parent, options) {
   // Update stats for the context.
   this.updateContext = function(ctxName) {
     var ctx = this.contexts[ctxName];
-
     // Iterate through each series, establishing the maxes of x and y.
     // Start with the values backwards so that min and max work.
     var xmax = -Infinity;
