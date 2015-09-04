@@ -10,9 +10,9 @@ CLACK.D3HistogramHeatMapRenderer = function(options) {
   // to the canvas context's `fillStyle` property.
   options.colorFunction = options.colorFunction || function(color) { return color; };
   // Color scale start value.
-  options.colorScaleStart = options.colorScaleStart || '#555';
+  options.colorScaleStart = options.colorScaleStart || 'blue';
   // Color scale end value.
-  options.colorScaleEnd = options.colorScaleEnd || '#CCC';
+  options.colorScaleEnd = options.colorScaleEnd || 'red';
   // Scale of color. Uses CLACK.makeScale
   options.colorScale = options.colorScale || 'log';
 
@@ -28,6 +28,9 @@ CLACK.D3HistogramHeatMapRenderer = function(options) {
   this.draw = function(c, parent, chart) {
     var parentWidth = parseInt(parent.style.width, 10);
     var parentHeight = parseInt(parent.style.height, 10);
+
+    console.log(parentWidth);
+    console.log(parentHeight);
 
     var exes = {};
     // Create a map of x values to y values, as we need to bucket them.
@@ -58,7 +61,9 @@ CLACK.D3HistogramHeatMapRenderer = function(options) {
       .domain([ 1, c.maxLength ])
       .range([ options.colorScaleStart, options.colorScaleEnd ]);
 
-    var svg = d3.select(parent).append("svg");
+    var svg = d3.select(parent).append("svg")
+    .attr("width", parentWidth)
+    .attr("height", parentWidth);
 
     var finalData = [];
     // For each bin…

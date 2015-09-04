@@ -31,9 +31,8 @@ CLACK.D3LineRenderer = function(options) {
 
     var finalData = [];
     for(var j = 0; j < c.series.length; j++) {
-      finalData[j] = d3.zip(c.series[j].x, c.series[j].y)
+      finalData[j] = d3.zip(c.series[j].x, c.series[j].y);
     }
-
 
     if(this.svg === undefined) {
       this.svg = d3.select(parent).append("svg");

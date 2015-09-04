@@ -2,7 +2,7 @@
 layout: default
 ---
 
-<p>20 charts, each with 4 timeseries and 30 points updating every 10ms. Axes are intentionally not shown because D3 is prohibitively slow at updating the axes at this speed.</p>
+<p>20 charts, each with 4 timeseries and 30 points updating every 5ms. Axes are intentionally not shown because D3 is prohibitively slow at updating the axes at this speed.</p>
 
 <div id="root"></div>
 
@@ -11,7 +11,7 @@ $(document).ready(function() {
   var charts = [];
   var colors = d3.scale.category10();
   console.time("many charts");
-  for(var x = 0; x <= 20; x++) {
+  for(var x = 0; x < 20; x++) {
 
     var div = document.createElement('div');
     div.id = 'chart' + x;
@@ -34,7 +34,7 @@ $(document).ready(function() {
     var points = 30;
 
     var currentDate = new Date();
-    
+
     for(var j = 0; j <= series; j++) {
       var exes = [];
       var whys = [];
@@ -69,8 +69,8 @@ $(document).ready(function() {
         x += 1;
       }
     }
-    setTimeout(addAPoint,10);
+    setTimeout(addAPoint,5);
   }
-  setTimeout(addAPoint,10);
+  setTimeout(addAPoint,5);
 });
 </script>

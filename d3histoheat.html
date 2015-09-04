@@ -2,7 +2,7 @@
 layout: default
 ---
 
-<p>Many time series merged into one visualization. Each x "column" is a histogram of Y values, shown as a heatmap. A bit faster than <a href="/d3histoheat.html">the D3 version</a>. Give it a few seconds.</p>
+<p>D3-based, many time series merged into one visualization. Each x "column" is a histogram of Y values, shown as a heatmap. A bit slower than <a href="/histoheat.html">the canvas version</a>.  Give it a few seconds.</p>
 
 <div id="chartContainer" style="display: inline-block; position: relative"></div>
 
@@ -13,7 +13,7 @@ $(document).ready(function() {
     document.getElementById('chartContainer'), {
       width: 500,
       height: 350,
-      renderer: new CLACK.HistogramHeatMapRenderer()
+      renderer: new CLACK.D3HistogramHeatMapRenderer()
     }
   );
 
