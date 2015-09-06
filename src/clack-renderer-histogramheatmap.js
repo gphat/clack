@@ -52,7 +52,7 @@ CLACK.HistogramHeatMapRenderer = function(options) {
 
     var ctx = this.memCtx;
     // Clear the in-memory context for the renderer.
-    ctx.clearRect(0, 0, chart.options.width, chart.options.height);
+    ctx.clearRect(0, 0, parentWidth, parentHeight);
 
     var exes = {};
     // Create a map of x values to y values, as we need to bucket them.
@@ -69,18 +69,18 @@ CLACK.HistogramHeatMapRenderer = function(options) {
 
     // Create a new histogram and set it's range to the min/max for
     // the entire set of series.
-    var binCount = Math.round(chart.options.height / 5);
+    var binCount = Math.round(parentHeight / 5);
     var layout = d3.layout.histogram()
       // Set the number of bins to the range of our entire context's Y.
       .bins(binCount);
     layout.range([ c.ymin, c.ymax ]);
 
-    var bheight = chart.options.height / binCount;
+    var bheight = parentHeight / binCount;
     // The width for each bin
-    var bwidth = chart.options.width / Object.keys(exes).length;
+    var bwidth = parentWidth / Object.keys(exes).length;
 
-    // Create a color range that spans from 0 to the number of Y values in our histogram.
-    var colorScale = CLACK.makeScale(options.colorScale).domain([ 1, c.maxLength ]).range([ options.colorScaleStart, options.colorScaleEnd ]);
+    // Create a color range that spans from 1 to the number of series in our dataset (the max histogram frequency possible).
+    var colorScale = CLACK.makeScale(options.colorScale).domain([ 1, c.series.length ]).range([ options.colorScaleStart, options.colorScaleEnd ]);
 
     // For each bin…
     var colIndex = 0;
@@ -99,7 +99,7 @@ CLACK.HistogramHeatMapRenderer = function(options) {
           // times the height of the whole chart.
           ctx.fillRect(
             0 + (colIndex * bwidth),              // x is the offset from 0
-            chart.options.height - ((bin + 1) * bheight),
+            parentHeight - ((bin + 1) * bheight),
             bwidth, // bar's width (evenly spaced based on the number of columns)
             bheight // And the height!
           );

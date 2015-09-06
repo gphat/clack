@@ -47,14 +47,14 @@ CLACK.D3HistogramHeatMapRenderer = function(options) {
 
     // Create a new histogram and set it's range to the min/max for
     // the entire set of series.
-    var binCount = Math.round(chart.options.height / 5);
+    var binCount = Math.round(parentHeight / 5);
     var layout = d3.layout.histogram()
       .bins(binCount);
     layout.range([ c.ymin, c.ymax ]);
 
-    var bheight = chart.options.height / binCount;
+    var bheight = parentHeight / binCount;
     // The width for each bin
-    var bwidth = chart.options.width / Object.keys(exes).length;
+    var bwidth = parentWidth / Object.keys(exes).length;
 
     // Create a color range that spans from 0 to the number of Y values in our histogram.
     var colorScale = CLACK.makeScale(options.colorScale)
