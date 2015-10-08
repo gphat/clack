@@ -3,9 +3,6 @@
 // context name defaults to default everywhere
 // Doesn't do multiple contexts yet
 
-// Ideas
-// Is this applicable: http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
-
 var CLACK = CLACK || {};
 
 CLACK.Context = function() {
