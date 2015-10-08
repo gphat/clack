@@ -69,8 +69,8 @@ $(document).ready(function() {
         x += 1;
       }
     }
-    setTimeout(addAPoint,5);
+    window.requestAnimationFrame(addAPoint);
   }
-  setTimeout(addAPoint,5);
+  window.requestAnimationFrame(addAPoint);
 });
 </script>

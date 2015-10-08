@@ -17,7 +17,7 @@ $(document).ready(function() {
   var points = 30;
 
   var currentDate = new Date();
-  
+
   var colors = d3.scale.category10();
 
   // console.time("generatechart");
@@ -50,8 +50,8 @@ $(document).ready(function() {
       // console.timeEnd('redraw');
       x += 1;
     }
-    setTimeout(addAPoint,1);
+    window.requestAnimationFrame(addAPoint);
   }
-  setTimeout(addAPoint,1);
+  window.requestAnimationFrame(addAPoint);
 });
 </script>
